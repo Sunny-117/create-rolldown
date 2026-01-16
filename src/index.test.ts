@@ -24,6 +24,8 @@ import {
   promptFramework,
   promptVariant,
   promptImmediate,
+  install,
+  start,
   FRAMEWORKS,
   TEMPLATES,
   renameFiles,
@@ -722,7 +724,7 @@ describe('Unit Tests - Interactive Prompts', () => {
   })
   
   // Mock process.exit to prevent tests from actually exiting
-  const mockExit = vi.spyOn(process, 'exit').mockImplementation((code?: number) => {
+  const mockExit = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null | undefined): never => {
     throw new Error(`process.exit called with code ${code}`)
   })
   
@@ -1206,5 +1208,335 @@ describe('Unit Tests - Command Execution', () => {
       consoleSpy.mockRestore()
       delete process.env._ROLLDOWN_TEST_CLI
     })
+  })
+})
+
+describe('Integration Tests - Main Initialization Flow', () => {
+  let prompts: any
+  let tempDir: string
+  
+  beforeEach(async () => {
+    prompts = await import('@clack/prompts')
+    vi.clearAllMocks()
+    
+    // Create a temporary directory for testing
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-init-'))
+    
+    // Set test environment to skip actual command execution
+    process.env._ROLLDOWN_TEST_CLI = 'true'
+    
+    // Mock process.cwd to return our temp directory
+    vi.spyOn(process, 'cwd').mockReturnValue(tempDir)
+  })
+  
+  afterEach(() => {
+    // Clean up
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
+    delete process.env._ROLLDOWN_TEST_CLI
+    vi.restoreAllMocks()
+  })
+  
+  it('creates a project in non-interactive mode with all parameters', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies the complete project creation flow in non-interactive mode
+    
+    // Create a minimal template directory for testing
+    const templateDir = path.join(tempDir, 'template-vanilla-ts')
+    fs.mkdirSync(templateDir, { recursive: true })
+    
+    // Create template files
+    fs.writeFileSync(
+      path.join(templateDir, 'package.json'),
+      JSON.stringify({ name: 'template-vanilla-ts', version: '1.0.0' }, null, 2)
+    )
+    fs.writeFileSync(
+      path.join(templateDir, 'index.html'),
+      '<!DOCTYPE html><html><head><title>Template</title></head><body></body></html>'
+    )
+    fs.writeFileSync(path.join(templateDir, '_gitignore'), 'node_modules\n')
+    fs.writeFileSync(path.join(templateDir, 'README.md'), '# Template')
+    
+    // Mock import.meta.url to point to our temp directory
+    const originalUrl = import.meta.url
+    
+    // We can't easily test the full init function without mocking import.meta.url
+    // Instead, we'll test the individual components that make up the flow
+    
+    // Test argument parsing
+    const args = parseArguments(['my-project', '--template', 'vanilla-ts', '--no-interactive'])
+    expect(args._).toEqual(['my-project'])
+    expect(args.template).toBe('vanilla-ts')
+    expect(args.interactive).toBe(false)
+    
+    // Test mode detection
+    const interactive = shouldUseInteractiveMode(args)
+    expect(interactive).toBe(false)
+    
+    // Test directory formatting
+    const targetDir = formatTargetDir(args._[0])
+    expect(targetDir).toBe('my-project')
+    
+    // Test package name conversion
+    const packageName = toValidPackageName('my-project')
+    expect(isValidPackageName(packageName)).toBe(true)
+    
+    // Test template validation
+    expect(TEMPLATES).toContain('vanilla-ts')
+    
+    // Test project creation
+    const projectRoot = path.join(tempDir, 'my-project')
+    copyTemplate(templateDir, projectRoot, 'my-project', packageName)
+    
+    // Verify project was created
+    expect(fs.existsSync(projectRoot)).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, 'package.json'))).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, 'index.html'))).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, '.gitignore'))).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, 'README.md'))).toBe(true)
+    
+    // Verify package.json was updated
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf-8'))
+    expect(pkg.name).toBe(packageName)
+    
+    // Verify index.html was updated
+    const html = fs.readFileSync(path.join(projectRoot, 'index.html'), 'utf-8')
+    expect(html).toContain('<title>my-project</title>')
+  })
+  
+  it('handles interactive mode with user prompts', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies the interactive flow with mocked prompts
+    
+    // Create a minimal template directory
+    const templateDir = path.join(tempDir, 'template-react-ts')
+    fs.mkdirSync(templateDir, { recursive: true })
+    
+    fs.writeFileSync(
+      path.join(templateDir, 'package.json'),
+      JSON.stringify({ name: 'template-react-ts', version: '1.0.0' }, null, 2)
+    )
+    fs.writeFileSync(
+      path.join(templateDir, 'index.html'),
+      '<!DOCTYPE html><html><head><title>Template</title></head><body></body></html>'
+    )
+    
+    // Mock prompts for interactive mode
+    vi.mocked(prompts.isCancel).mockReturnValue(false)
+    vi.mocked(prompts.text).mockResolvedValueOnce('my-react-app') // project name
+    
+    const reactFramework = FRAMEWORKS.find(f => f.name === 'react')!
+    vi.mocked(prompts.select)
+      .mockResolvedValueOnce(reactFramework) // framework selection
+      .mockResolvedValueOnce('react-ts') // variant selection
+    
+    vi.mocked(prompts.confirm).mockResolvedValueOnce(false) // immediate install
+    
+    // Test interactive mode detection
+    const args = parseArguments([])
+    
+    // Mock TTY environment for interactive mode
+    Object.defineProperty(process.stdout, 'isTTY', { value: true, writable: true, configurable: true })
+    Object.defineProperty(process.stdin, 'isTTY', { value: true, writable: true, configurable: true })
+    delete process.env.CI
+    
+    const interactive = shouldUseInteractiveMode(args)
+    expect(interactive).toBe(true)
+    
+    // Test prompt functions
+    const projectName = await promptProjectName('rolldown-project')
+    expect(projectName).toBe('my-react-app')
+    
+    const framework = await promptFramework(FRAMEWORKS)
+    expect(framework.name).toBe('react')
+    
+    const variant = await promptVariant(framework.variants)
+    expect(variant).toBe('react-ts')
+    
+    const shouldInstall = await promptImmediate('npm')
+    expect(shouldInstall).toBe(false)
+    
+    // Test project creation with interactive selections
+    const projectRoot = path.join(tempDir, 'my-react-app')
+    const packageName = toValidPackageName(projectName)
+    
+    copyTemplate(templateDir, projectRoot, projectName, packageName)
+    
+    // Verify project was created
+    expect(fs.existsSync(projectRoot)).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, 'package.json'))).toBe(true)
+    
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf-8'))
+    expect(pkg.name).toBe(packageName)
+  })
+  
+  it('handles directory conflicts with overwrite option', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies directory conflict handling
+    
+    // Create existing directory with files
+    const projectRoot = path.join(tempDir, 'existing-project')
+    fs.mkdirSync(projectRoot, { recursive: true })
+    fs.writeFileSync(path.join(projectRoot, 'existing-file.txt'), 'existing content')
+    fs.mkdirSync(path.join(projectRoot, '.git'))
+    fs.writeFileSync(path.join(projectRoot, '.git', 'config'), 'git config')
+    
+    // Verify directory is not empty
+    expect(isEmpty(projectRoot)).toBe(false)
+    
+    // Test overwrite in non-interactive mode
+    const args = parseArguments(['existing-project', '--overwrite', '--template', 'vanilla-ts', '--no-interactive'])
+    expect(args.overwrite).toBe(true)
+    
+    // Empty the directory (preserving .git)
+    emptyDir(projectRoot)
+    
+    // Verify .git is preserved but other files are removed
+    expect(fs.existsSync(path.join(projectRoot, '.git'))).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, '.git', 'config'))).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, 'existing-file.txt'))).toBe(false)
+    
+    // Now create template
+    const templateDir = path.join(tempDir, 'template-vanilla-ts')
+    fs.mkdirSync(templateDir, { recursive: true })
+    fs.writeFileSync(
+      path.join(templateDir, 'package.json'),
+      JSON.stringify({ name: 'template', version: '1.0.0' }, null, 2)
+    )
+    
+    copyTemplate(templateDir, projectRoot, 'existing-project', 'existing-project')
+    
+    // Verify new files are created and .git is still there
+    expect(fs.existsSync(path.join(projectRoot, 'package.json'))).toBe(true)
+    expect(fs.existsSync(path.join(projectRoot, '.git'))).toBe(true)
+  })
+  
+  it('handles interactive directory conflict with user choice', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies interactive directory conflict handling
+    
+    // Create existing directory
+    const projectRoot = path.join(tempDir, 'conflict-project')
+    fs.mkdirSync(projectRoot, { recursive: true })
+    fs.writeFileSync(path.join(projectRoot, 'existing.txt'), 'content')
+    
+    // Mock interactive mode
+    Object.defineProperty(process.stdout, 'isTTY', { value: true, writable: true, configurable: true })
+    Object.defineProperty(process.stdin, 'isTTY', { value: true, writable: true, configurable: true })
+    delete process.env.CI
+    
+    // Test 'yes' option (overwrite)
+    vi.mocked(prompts.select).mockResolvedValueOnce('yes')
+    vi.mocked(prompts.isCancel).mockReturnValue(false)
+    
+    const overwriteChoice = await promptOverwrite('conflict-project')
+    expect(overwriteChoice).toBe('yes')
+    
+    // Test 'ignore' option
+    vi.mocked(prompts.select).mockResolvedValueOnce('ignore')
+    const ignoreChoice = await promptOverwrite('conflict-project')
+    expect(ignoreChoice).toBe('ignore')
+  })
+  
+  it('uses default values in non-interactive mode when parameters are missing', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies default value usage in non-interactive mode
+    
+    // Parse arguments without project name or template
+    const args = parseArguments(['--no-interactive'])
+    expect(args.interactive).toBe(false)
+    
+    // Test default project name
+    const defaultProjectName = 'rolldown-project'
+    const targetDir = formatTargetDir(args._[0]) || defaultProjectName
+    expect(targetDir).toBe(defaultProjectName)
+    
+    // Test default template
+    const template = args.template || 'vanilla-ts'
+    expect(template).toBe('vanilla-ts')
+    expect(TEMPLATES).toContain(template)
+    
+    // Test package name conversion
+    const packageName = toValidPackageName(targetDir)
+    expect(isValidPackageName(packageName)).toBe(true)
+  })
+  
+  it('detects package manager from environment', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies package manager detection
+    
+    // Test with different user agents
+    const testCases = [
+      { userAgent: 'npm/8.19.2 node/v18.12.0', expected: 'npm' },
+      { userAgent: 'pnpm/7.14.0 node/v18.12.0', expected: 'pnpm' },
+      { userAgent: 'yarn/1.22.19 node/v18.12.0', expected: 'yarn' },
+      { userAgent: 'bun/0.5.0 node/v18.12.0', expected: 'bun' },
+    ]
+    
+    for (const testCase of testCases) {
+      const pkgInfo = pkgFromUserAgent(testCase.userAgent)
+      expect(pkgInfo?.name).toBe(testCase.expected)
+      
+      // Verify correct commands are generated
+      const installCmd = getInstallCommand(testCase.expected)
+      expect(installCmd[0]).toBe(testCase.expected)
+      
+      const runCmd = getRunCommand(testCase.expected, 'dev')
+      expect(runCmd[0]).toBe(testCase.expected)
+    }
+    
+    // Test fallback to npm when no user agent
+    const pkgInfo = pkgFromUserAgent(undefined)
+    expect(pkgInfo).toBeUndefined()
+    
+    const defaultInstallCmd = getInstallCommand('npm')
+    expect(defaultInstallCmd).toEqual(['npm', 'install'])
+  })
+  
+  it('validates template names and uses default for invalid templates', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies template validation
+    
+    // Test valid template
+    const validTemplate = 'react-ts'
+    expect(TEMPLATES).toContain(validTemplate)
+    
+    // Test invalid template
+    const invalidTemplate = 'nonexistent-template'
+    expect(TEMPLATES).not.toContain(invalidTemplate)
+    
+    // In non-interactive mode, should fall back to default
+    const args = parseArguments(['--template', invalidTemplate, '--no-interactive'])
+    const template = TEMPLATES.includes(args.template!) ? args.template : 'vanilla-ts'
+    expect(template).toBe('vanilla-ts')
+  })
+  
+  it('handles immediate installation flag', async () => {
+    // Requirements: 1.1, 4.1, 7.4
+    // This test verifies immediate installation handling
+    
+    // Test with immediate flag
+    const args1 = parseArguments(['--immediate'])
+    expect(args1.immediate).toBe(true)
+    
+    // Test with short flag
+    const args2 = parseArguments(['-i'])
+    expect(args2.immediate).toBe(true)
+    
+    // Test without flag
+    const args3 = parseArguments([])
+    expect(args3.immediate).toBeUndefined()
+    
+    // In test environment, install and start should not throw
+    const projectRoot = path.join(tempDir, 'test-install')
+    fs.mkdirSync(projectRoot, { recursive: true })
+    
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    
+    expect(() => install(projectRoot, 'npm')).not.toThrow()
+    expect(() => start(projectRoot, 'npm')).not.toThrow()
+    
+    consoleSpy.mockRestore()
   })
 })

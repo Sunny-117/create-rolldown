@@ -703,6 +703,10 @@ export function start(root: string, agent: string): void {
   run(runCmd, { cwd: root })
 }
 
+/**
+ * Main initialization function
+ * Orchestrates the entire project creation workflow
+ */
 async function init(): Promise<void> {
   const args = parseArguments()
   
@@ -715,17 +719,152 @@ async function init(): Promise<void> {
   // Detect interactive mode
   const interactive = shouldUseInteractiveMode(args)
   
-  // Get target directory from arguments or use default
-  const argTargetDir = formatTargetDir(args._[0])
+  // Detect AI agent environment and provide guidance
+  if (!interactive && !process.stdout.isTTY) {
+    console.log(pc.yellow('\nDetected non-interactive environment (AI agent or CI/CD).'))
+    console.log(pc.yellow('For best results, use: create-rolldown <project-name> --template <template> --no-interactive\n'))
+  }
   
-  // TODO: Implement rest of initialization logic
-  console.log('create-rolldown')
-  console.log('Arguments:', args)
-  console.log('Interactive mode:', interactive)
-  console.log('Target directory:', argTargetDir || 'rolldown-project')
+  // Get target directory from arguments or use default
+  const defaultProjectName = 'rolldown-project'
+  let targetDir = formatTargetDir(args._[0])
+  
+  // Get project name (interactive or from args)
+  let projectName: string
+  if (interactive && !targetDir) {
+    projectName = await promptProjectName(defaultProjectName)
+    targetDir = formatTargetDir(projectName)
+  } else {
+    projectName = targetDir || defaultProjectName
+    targetDir = projectName
+  }
+  
+  // Resolve to absolute path
+  const root = path.resolve(process.cwd(), targetDir)
+  
+  // Handle directory conflicts
+  if (fs.existsSync(root) && !isEmpty(root)) {
+    if (interactive) {
+      const overwrite = await promptOverwrite(targetDir)
+      
+      if (overwrite === 'no') {
+        console.log(pc.red('\nOperation cancelled'))
+        process.exit(0)
+      } else if (overwrite === 'yes') {
+        console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
+        emptyDir(root)
+      }
+      // If 'ignore', continue without clearing
+    } else {
+      // Non-interactive mode
+      if (args.overwrite) {
+        console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
+        emptyDir(root)
+      } else {
+        console.log(pc.red(`\nTarget directory "${targetDir}" is not empty.`))
+        console.log(pc.red('Use --overwrite flag to overwrite existing files, or choose a different directory.'))
+        process.exit(1)
+      }
+    }
+  }
+  
+  // Get package name
+  let packageName = toValidPackageName(projectName)
+  if (interactive && !isValidPackageName(projectName)) {
+    packageName = await promptPackageName(packageName)
+  }
+  
+  // Get template
+  let template = args.template
+  
+  if (interactive && !template) {
+    // Prompt for framework
+    const framework = await promptFramework(FRAMEWORKS)
+    
+    // Prompt for variant
+    template = await promptVariant(framework.variants)
+  } else if (!template) {
+    // Non-interactive mode without template - use default
+    template = 'vanilla-ts'
+  }
+  
+  // Validate template
+  if (!TEMPLATES.includes(template)) {
+    if (interactive) {
+      console.log(pc.yellow(`\nTemplate "${template}" not found. Please select from available templates:\n`))
+      const framework = await promptFramework(FRAMEWORKS)
+      template = await promptVariant(framework.variants)
+    } else {
+      console.log(pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla-ts".\n`))
+      template = 'vanilla-ts'
+    }
+  }
+  
+  // Detect package manager
+  const pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent)
+  const pkgManager = pkgInfo?.name || 'npm'
+  
+  // Ask about immediate installation (interactive only)
+  let shouldInstall = args.immediate || false
+  if (interactive && !args.immediate) {
+    shouldInstall = await promptImmediate(pkgManager)
+  }
+  
+  // Start scaffolding
+  console.log(pc.cyan(`\nScaffolding project in ${root}...`))
+  
+  // Get template directory
+  const templateDir = path.resolve(
+    path.dirname(new URL(import.meta.url).pathname),
+    '..',
+    `template-${template}`
+  )
+  
+  // Create target directory if it doesn't exist
+  if (!fs.existsSync(root)) {
+    fs.mkdirSync(root, { recursive: true })
+  }
+  
+  // Copy template files
+  copyTemplate(templateDir, root, projectName, packageName)
+  
+  console.log(pc.green('\n✓ Project created successfully!'))
+  
+  // Install dependencies and start server if requested
+  if (shouldInstall) {
+    try {
+      install(root, pkgManager)
+      console.log(pc.green('\n✓ Dependencies installed successfully!'))
+      
+      start(root, pkgManager)
+    } catch (error) {
+      console.error(pc.red('\n✗ Failed to install dependencies or start server'))
+      console.error(error)
+      process.exit(1)
+    }
+  } else {
+    // Display next steps
+    console.log(pc.cyan('\nNext steps:'))
+    
+    const cdCommand = path.relative(process.cwd(), root)
+    if (cdCommand) {
+      console.log(pc.cyan(`  cd ${cdCommand}`))
+    }
+    
+    const installCmd = getInstallCommand(pkgManager).join(' ')
+    console.log(pc.cyan(`  ${installCmd}`))
+    
+    const runCmd = getRunCommand(pkgManager, 'dev').join(' ')
+    console.log(pc.cyan(`  ${runCmd}`))
+    
+    console.log()
+  }
 }
 
-init().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+// Only run init if not in test environment
+if (!process.env._ROLLDOWN_TEST_CLI && !process.env.VITEST) {
+  init().catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
+}
