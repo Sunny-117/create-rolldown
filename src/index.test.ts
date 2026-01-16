@@ -9,6 +9,9 @@ import {
   toValidPackageName,
   isEmpty,
   emptyDir,
+  pkgFromUserAgent,
+  getInstallCommand,
+  getRunCommand,
 } from './index'
 
 describe('Property Tests - String Validation and Formatting', () => {
@@ -98,5 +101,95 @@ describe('Property Tests - File System Operations', () => {
       ),
       { numRuns: 100 }
     )
+  })
+})
+
+describe('Property Tests - Package Manager Detection', () => {
+  it('Property 12: Package manager command format correctness', () => {
+    // Feature: create-rolldown, Property 12: 包管理器命令格式正确性
+    // Validates: Requirements 5.3, 6.2
+    fc.assert(
+      fc.property(
+        fc.constantFrom('npm', 'pnpm', 'yarn', 'bun', 'deno'),
+        fc.string().filter((s) => s.length > 0),
+        (agent, script) => {
+          // Test install command format
+          const installCmd = getInstallCommand(agent)
+          expect(Array.isArray(installCmd)).toBe(true)
+          expect(installCmd.length).toBeGreaterThan(0)
+          expect(installCmd[0]).toBe(agent)
+          
+          // Verify specific command formats
+          switch (agent) {
+            case 'npm':
+              expect(installCmd).toEqual(['npm', 'install'])
+              break
+            case 'pnpm':
+              expect(installCmd).toEqual(['pnpm', 'install'])
+              break
+            case 'yarn':
+              expect(installCmd).toEqual(['yarn'])
+              break
+            case 'bun':
+              expect(installCmd).toEqual(['bun', 'install'])
+              break
+            case 'deno':
+              expect(installCmd).toEqual(['deno', 'install'])
+              break
+          }
+          
+          // Test run command format
+          const runCmd = getRunCommand(agent, script)
+          expect(Array.isArray(runCmd)).toBe(true)
+          expect(runCmd.length).toBeGreaterThan(0)
+          expect(runCmd[0]).toBe(agent)
+          expect(runCmd).toContain(script)
+          
+          // Verify specific run command formats
+          switch (agent) {
+            case 'npm':
+              expect(runCmd).toEqual(['npm', 'run', script])
+              break
+            case 'pnpm':
+              expect(runCmd).toEqual(['pnpm', script])
+              break
+            case 'yarn':
+              expect(runCmd).toEqual(['yarn', script])
+              break
+            case 'bun':
+              expect(runCmd).toEqual(['bun', 'run', script])
+              break
+            case 'deno':
+              expect(runCmd).toEqual(['deno', 'task', script])
+              break
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  it('pkgFromUserAgent parses valid user agent strings', () => {
+    fc.assert(
+      fc.property(
+        fc.constantFrom('npm', 'pnpm', 'yarn', 'bun', 'deno'),
+        fc.string().filter((s) => s.length > 0 && !s.includes(' ') && !s.includes('/')),
+        (agent, version) => {
+          const userAgent = `${agent}/${version} node/v18.0.0`
+          const result = pkgFromUserAgent(userAgent)
+          
+          expect(result).toBeDefined()
+          expect(result?.name).toBe(agent)
+          expect(result?.version).toBe(version)
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  it('pkgFromUserAgent returns undefined for invalid input', () => {
+    expect(pkgFromUserAgent(undefined)).toBeUndefined()
+    expect(pkgFromUserAgent('')).toBeUndefined()
+    expect(pkgFromUserAgent('invalid')).toBeUndefined()
   })
 })

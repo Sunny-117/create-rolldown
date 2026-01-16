@@ -49,14 +49,14 @@
     - **Property 11: 目录清空保留 .git**
     - **Validates: Requirements 4.6**
 
-- [ ] 3. 实现包管理器检测和命令生成
-  - [ ] 3.1 实现包管理器相关函数
+- [x] 3. 实现包管理器检测和命令生成
+  - [x] 3.1 实现包管理器相关函数
     - 实现 pkgFromUserAgent：从环境变量解析包管理器信息
     - 实现 getInstallCommand：生成安装命令数组
     - 实现 getRunCommand：生成运行脚本命令数组
     - _Requirements: 5.1, 5.2, 5.3, 6.2_
 
-  - [ ] 3.2 编写包管理器函数的属性测试
+  - [x] 3.2 编写包管理器函数的属性测试
     - **Property 12: 包管理器命令格式正确性**
     - **Validates: Requirements 5.3, 6.2**
 
