@@ -2,7 +2,6 @@
 <samp>create-rolldown <img src="https://img.shields.io/npm/v/create-rolldown?color=333&labelColor=555&style=flat-square" ></samp>
 </h1>
 
-
 <p align='center'>
   <samp>⚡️ Scaffolding tool for Rolldown library projects - a fast JavaScript bundler written in Rust, with TypeScript support and multiple framework templates</samp>
 <br>
@@ -178,7 +177,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [Rolldown](https://rolldown.rs) - Fast JavaScript bundler written in Rust
 - [tsdown](https://tsdown.dev) - TypeScript bundler built on Rolldown
 - [create-vite](https://github.com/vitejs/vite/tree/main/packages/create-vite) - Inspiration for this project
-
 
 <!-- Badges -->
 
