@@ -34,6 +34,7 @@ npm run build
 ```
 
 Outputs to `dist/` directory with:
+
 - `index.js` - ESM bundle
 - `index.d.ts` - TypeScript declarations
 
@@ -92,6 +93,7 @@ console.log(counter.value); // 2
    - `repository` - Your git repository URL
 
 2. Build the library:
+
    ```bash
    npm run build
    ```

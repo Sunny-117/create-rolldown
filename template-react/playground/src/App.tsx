@@ -12,9 +12,7 @@ export function App() {
       <div class="card">
         <MyButton />
       </div>
-      <p class="read-the-docs">
-        Click on the Rolldown logo to learn more
-      </p>
+      <p class="read-the-docs">Click on the Rolldown logo to learn more</p>
     </>
   );
 }

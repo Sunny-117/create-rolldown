@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "description": "A starter for creating a Vue library with Rolldown.",
   "keywords": [
-    "vue",
-    "vue3",
-    "rolldown",
-    "library",
+    "bundler",
     "component",
+    "library",
+    "rolldown",
     "typescript",
-    "bundler"
+    "vue",
+    "vue3"
   ],
   "homepage": "https://github.com/author/library#readme",
   "bugs": {

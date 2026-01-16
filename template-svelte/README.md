@@ -35,6 +35,7 @@ npm run play
 ```
 
 Opens a Vite dev server at `http://localhost:5173` with:
+
 - ⚡️ Hot Module Replacement (HMR)
 - 🔄 Instant updates when you edit components
 - 🎨 Live preview of your library
@@ -48,6 +49,7 @@ npm run build
 ```
 
 Outputs to `dist/` directory with:
+
 - `index.js` - ESM bundle
 - `index.d.ts` - TypeScript declarations
 
@@ -58,6 +60,7 @@ npm run dev
 ```
 
 Automatically rebuilds the library on file changes. Use this when:
+
 - Testing your library in another project
 - Preparing for publishing
 - Running alongside the playground
@@ -117,11 +120,13 @@ After building and publishing, users can import your components:
    - `keywords` - Help users find your package
 
 2. Build the library:
+
    ```bash
    npm run build
    ```
 
 3. Test the build locally:
+
    ```bash
    npm pack
    # Creates a .tgz file you can test in another project

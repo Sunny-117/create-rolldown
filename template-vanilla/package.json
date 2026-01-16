@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "description": "A starter for creating a TypeScript library with Rolldown.",
   "keywords": [
-    "typescript",
-    "rolldown",
+    "bundler",
     "library",
-    "utility",
-    "bundler"
+    "rolldown",
+    "typescript",
+    "utility"
   ],
   "homepage": "https://github.com/author/library#readme",
   "bugs": {

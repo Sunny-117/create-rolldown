@@ -13,7 +13,5 @@ const count = ref(0);
 </script>
 
 <template>
-  <button type="button" @click="count++">
-    count is {{ count }}
-  </button>
+  <button type="button" @click="count++">count is {{ count }}</button>
 </template>

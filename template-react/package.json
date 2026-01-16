@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "description": "A starter for creating a React library with Rolldown.",
   "keywords": [
+    "bundler",
+    "component",
+    "library",
     "react",
     "rolldown",
-    "library",
-    "component",
-    "typescript",
-    "bundler"
+    "typescript"
   ],
   "homepage": "https://github.com/author/library#readme",
   "bugs": {
