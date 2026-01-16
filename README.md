@@ -1,5 +1,5 @@
 <h1 align='center'>
-<samp>create-rolldown <img src="https://img.shields.io/npm/v/create-rolldown?color=333&labelColor=555&style=flat-square" ></samp>
+<samp>create-rolldown 🔧</samp>
 </h1>
 
 <p align='center'>
