@@ -231,10 +231,7 @@ test('converts invalid package name to valid one', () => {
 });
 
 test('handles all supported templates', () => {
-  const templates = [
-    'vanilla',
-    'react',
-  ];
+  const templates = ['vanilla', 'react'];
 
   templates.forEach((template) => {
     const testPath = path.join(__dirname, `test-${template}`);

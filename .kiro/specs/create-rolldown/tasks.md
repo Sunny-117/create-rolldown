@@ -185,14 +185,13 @@
   - 验证错误处理是否正常工作
   - 如有问题请向用户反馈
 
-- [ ] 14. 完善文档和配置
+- [-] 14. 完善文档和配置
   - 创建项目 README.md，说明使用方法，测试覆盖率等
   - 创建 LICENSE 文件
   - 创建 CHANGELOG.md
   - 添加 .gitignore 文件
   - 验证 package.json 的发布配置
   - _Requirements: 9.5_
-
 
 ## Notes
 
