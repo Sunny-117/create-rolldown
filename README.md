@@ -2,6 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/create-rolldown.svg)](https://www.npmjs.com/package/create-rolldown)
 [![license](https://img.shields.io/npm/l/create-rolldown.svg)](https://github.com/rolldown/create-rolldown/blob/main/LICENSE)
+[![test](https://img.shields.io/badge/tests-77%20passed-brightgreen.svg)](https://github.com/sunny-117/create-rolldown)
+[![coverage](https://img.shields.io/badge/coverage-60.87%25-yellow.svg)](https://github.com/sunny-117/create-rolldown)
 
 Scaffolding tool for [Rolldown](https://rolldown.rs) library projects - a fast JavaScript bundler written in Rust.
 
@@ -117,6 +119,9 @@ pnpm test
 
 # Run tests in watch mode
 pnpm test:watch
+
+# Generate test coverage report
+pnpm test:coverage
 
 # Type checking
 pnpm typecheck

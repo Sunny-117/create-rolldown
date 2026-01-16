@@ -183,8 +183,8 @@ describe('Property Tests - File Generation and Template Handling', () => {
             })
           )
           .filter((arr) => {
-            // Ensure unique names to avoid conflicts
-            const names = arr.map((item) => item.name);
+            // Ensure unique names to avoid conflicts (case-insensitive for file systems)
+            const names = arr.map((item) => item.name.toLowerCase());
             const uniqueNames = new Set(names);
             return arr.length > 0 && arr.length < 10 && names.length === uniqueNames.size;
           }),
