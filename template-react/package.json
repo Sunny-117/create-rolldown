@@ -13,6 +13,6 @@
   },
   "devDependencies": {
     "@rolldown/plugin-babel": "^0.17.0",
-    "rolldown": "^0.17.0"
+    "rolldown": "^1.0.0-beta.60"
   }
 }
