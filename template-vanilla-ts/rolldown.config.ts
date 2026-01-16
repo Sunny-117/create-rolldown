@@ -1,4 +1,4 @@
-import { defineConfig } from 'rolldown'
+import { defineConfig } from 'rolldown';
 
 export default defineConfig({
   input: 'src/main.ts',
@@ -6,4 +6,4 @@ export default defineConfig({
     dir: 'dist',
     format: 'esm',
   },
-})
+});

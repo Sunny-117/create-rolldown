@@ -1,1 +1,13 @@
-{"name":"template-svelte-ts","private":true,"version":"0.0.0","type":"module","scripts":{"dev":"rolldown --watch","build":"rolldown"},"devDependencies":{"rolldown":"^0.17.0"}}
+{
+  "name": "template-svelte-ts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "rolldown --watch",
+    "build": "rolldown"
+  },
+  "devDependencies": {
+    "rolldown": "^0.17.0"
+  }
+}

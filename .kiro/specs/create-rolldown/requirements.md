@@ -59,7 +59,7 @@ create-rolldown 是一个命令行工具，用于快速搭建基于 Rolldown 打
 3. WHEN 用户指定的模板名称无效 THEN THE CLI SHALL 在交互模式下显示可用模板列表，在非交互模式下使用默认模板
 4. THE Template SHALL 包含完整的项目结构，包括源代码、配置文件、依赖声明
 5. THE Template SHALL 使用 Rolldown 作为打包工具
-6. WHEN 模板被应用 THEN THE Scaffolding_Tool SHALL 正确处理特殊文件名（如 _gitignore 重命名为 .gitignore）
+6. WHEN 模板被应用 THEN THE Scaffolding_Tool SHALL 正确处理特殊文件名（如 \_gitignore 重命名为 .gitignore）
 
 ### Requirement 4: 项目文件生成
 

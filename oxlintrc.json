@@ -3,10 +3,5 @@
     "no-unused-vars": "warn",
     "no-console": "off"
   },
-  "ignorePatterns": [
-    "node_modules",
-    "dist",
-    "template-*",
-    "__tests__"
-  ]
+  "ignorePatterns": ["node_modules", "dist", "template-*", "__tests__"]
 }

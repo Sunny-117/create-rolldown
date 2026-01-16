@@ -1,5 +1,5 @@
-import { defineConfig } from 'rolldown'
-import Vue from 'unplugin-vue/rolldown'
+import { defineConfig } from 'rolldown';
+import Vue from 'unplugin-vue/rolldown';
 
 export default defineConfig({
   input: 'src/main.js',
@@ -8,4 +8,4 @@ export default defineConfig({
     format: 'esm',
   },
   plugins: [Vue()],
-})
+});

@@ -1,5 +1,5 @@
-import { defineConfig } from 'rolldown'
-import babel from '@rolldown/plugin-babel'
+import { defineConfig } from 'rolldown';
+import babel from '@rolldown/plugin-babel';
 
 export default defineConfig({
   input: 'src/main.jsx',
@@ -12,4 +12,4 @@ export default defineConfig({
       presets: ['@babel/preset-react'],
     }),
   ],
-})
+});

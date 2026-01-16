@@ -5,6 +5,7 @@
 create-rolldown 是一个命令行脚手架工具，用于快速创建基于 Rolldown 打包工具的前端项目。该工具采用与 create-vite 相似的架构设计，提供交互式和非交互式两种使用模式，支持多种前端框架模板。
 
 核心设计理念：
+
 - **简单易用**：提供友好的交互式界面和清晰的命令行参数
 - **灵活可扩展**：模板系统易于扩展，支持添加新框架
 - **智能检测**：自动检测包管理器和运行环境
@@ -71,7 +72,7 @@ graph TD
 主入口文件，负责初始化和错误处理。
 
 ```typescript
-async function init(): Promise<void>
+async function init(): Promise<void>;
 ```
 
 ### 2. 参数解析模块
@@ -80,12 +81,12 @@ async function init(): Promise<void>
 
 ```typescript
 interface CLIArguments {
-  _: string[]                    // 位置参数
-  template?: string              // 模板名称
-  help?: boolean                 // 显示帮助
-  overwrite?: boolean            // 覆盖现有文件
-  immediate?: boolean            // 立即安装并启动
-  interactive?: boolean          // 强制交互/非交互模式
+  _: string[]; // 位置参数
+  template?: string; // 模板名称
+  help?: boolean; // 显示帮助
+  overwrite?: boolean; // 覆盖现有文件
+  immediate?: boolean; // 立即安装并启动
+  interactive?: boolean; // 强制交互/非交互模式
 }
 ```
 
@@ -95,70 +96,70 @@ interface CLIArguments {
 
 ```typescript
 // 项目名称输入
-async function promptProjectName(defaultValue: string): Promise<string>
+async function promptProjectName(defaultValue: string): Promise<string>;
 
 // 目录冲突处理
-async function promptOverwrite(targetDir: string): Promise<'yes' | 'no' | 'ignore'>
+async function promptOverwrite(targetDir: string): Promise<'yes' | 'no' | 'ignore'>;
 
 // 包名称输入
-async function promptPackageName(defaultValue: string): Promise<string>
+async function promptPackageName(defaultValue: string): Promise<string>;
 
 // 框架选择
-async function promptFramework(frameworks: Framework[]): Promise<Framework>
+async function promptFramework(frameworks: Framework[]): Promise<Framework>;
 
 // 变体选择
-async function promptVariant(variants: FrameworkVariant[]): Promise<string>
+async function promptVariant(variants: FrameworkVariant[]): Promise<string>;
 
 // 立即安装确认
-async function promptImmediate(pkgManager: string): Promise<boolean>
+async function promptImmediate(pkgManager: string): Promise<boolean>;
 ```
 
 ### 4. 框架和模板管理模块
 
 ```typescript
 interface Framework {
-  name: string                   // 框架标识符
-  display: string                // 显示名称
-  color: ColorFunc               // 颜色函数
-  variants: FrameworkVariant[]   // 变体列表
+  name: string; // 框架标识符
+  display: string; // 显示名称
+  color: ColorFunc; // 颜色函数
+  variants: FrameworkVariant[]; // 变体列表
 }
 
 interface FrameworkVariant {
-  name: string                   // 变体标识符（模板名称）
-  display: string                // 显示名称
-  color: ColorFunc               // 颜色函数
-  customCommand?: string         // 自定义创建命令（可选）
+  name: string; // 变体标识符（模板名称）
+  display: string; // 显示名称
+  color: ColorFunc; // 颜色函数
+  customCommand?: string; // 自定义创建命令（可选）
 }
 
 const FRAMEWORKS: Framework[] = [
   // 框架定义列表
-]
+];
 
 const TEMPLATES: string[] = [
   // 所有可用模板名称的扁平列表
-]
+];
 ```
 
 ### 5. 文件系统操作模块
 
 ```typescript
 // 复制文件或目录
-function copy(src: string, dest: string): void
+function copy(src: string, dest: string): void;
 
 // 递归复制目录
-function copyDir(srcDir: string, destDir: string): void
+function copyDir(srcDir: string, destDir: string): void;
 
 // 清空目录（保留 .git）
-function emptyDir(dir: string): void
+function emptyDir(dir: string): void;
 
 // 检查目录是否为空
-function isEmpty(path: string): boolean
+function isEmpty(path: string): boolean;
 
 // 写入文件（支持内容转换）
-function write(file: string, content?: string): void
+function write(file: string, content?: string): void;
 
 // 编辑文件内容
-function editFile(file: string, callback: (content: string) => string): void
+function editFile(file: string, callback: (content: string) => string): void;
 ```
 
 ### 6. 包管理器检测模块
@@ -167,18 +168,18 @@ function editFile(file: string, callback: (content: string) => string): void
 
 ```typescript
 interface PkgInfo {
-  name: string                   // 包管理器名称
-  version: string                // 版本号
+  name: string; // 包管理器名称
+  version: string; // 版本号
 }
 
 // 从 user agent 解析包管理器信息
-function pkgFromUserAgent(userAgent: string | undefined): PkgInfo | undefined
+function pkgFromUserAgent(userAgent: string | undefined): PkgInfo | undefined;
 
 // 获取安装命令
-function getInstallCommand(agent: string): string[]
+function getInstallCommand(agent: string): string[];
 
 // 获取运行脚本命令
-function getRunCommand(agent: string, script: string): string[]
+function getRunCommand(agent: string, script: string): string[];
 ```
 
 ### 7. 命令执行模块
@@ -187,26 +188,26 @@ function getRunCommand(agent: string, script: string): string[]
 
 ```typescript
 // 执行命令
-function run(command: string[], options?: SpawnOptions): void
+function run(command: string[], options?: SpawnOptions): void;
 
 // 安装依赖
-function install(root: string, agent: string): void
+function install(root: string, agent: string): void;
 
 // 启动开发服务器
-function start(root: string, agent: string): void
+function start(root: string, agent: string): void;
 ```
 
 ### 8. 验证和格式化模块
 
 ```typescript
 // 格式化目标目录路径
-function formatTargetDir(targetDir: string): string
+function formatTargetDir(targetDir: string): string;
 
 // 验证包名称是否合法
-function isValidPackageName(projectName: string): boolean
+function isValidPackageName(projectName: string): boolean;
 
 // 转换为合法的包名称
-function toValidPackageName(projectName: string): string
+function toValidPackageName(projectName: string): string;
 ```
 
 ## Data Models
@@ -234,81 +235,94 @@ template-{name}/
 ```typescript
 const renameFiles: Record<string, string | undefined> = {
   _gitignore: '.gitignore',
-}
+};
 ```
 
 ### 默认配置
 
 ```typescript
-const defaultTargetDir = 'rolldown-project'
-const defaultTemplate = 'vanilla-ts'
+const defaultTargetDir = 'rolldown-project';
+const defaultTemplate = 'vanilla-ts';
 ```
 
 ## Correctness Properties
 
-*属性（Property）是关于系统行为的形式化陈述，应该在所有有效执行中保持为真。属性是人类可读规范和机器可验证正确性保证之间的桥梁。*
+_属性（Property）是关于系统行为的形式化陈述，应该在所有有效执行中保持为真。属性是人类可读规范和机器可验证正确性保证之间的桥梁。_
 
 ### Property 1: CLI 模式检测正确性
-*对于任何* 运行环境（TTY/非TTY）和命令行参数组合，CLI 应该根据环境和参数正确选择交互模式或非交互模式。
+
+_对于任何_ 运行环境（TTY/非TTY）和命令行参数组合，CLI 应该根据环境和参数正确选择交互模式或非交互模式。
 **Validates: Requirements 1.1, 1.7, 2.1, 10.1**
 
 ### Property 2: 命令行参数应用正确性
-*对于任何* 有效的命令行参数组合（目标目录、模板、覆盖标志、立即安装标志），CLI 应该正确应用所有参数到项目创建过程中。
+
+_对于任何_ 有效的命令行参数组合（目标目录、模板、覆盖标志、立即安装标志），CLI 应该正确应用所有参数到项目创建过程中。
 **Validates: Requirements 1.3, 1.4, 1.5, 1.6**
 
 ### Property 3: 目录名称格式化幂等性
-*对于任何* 目录路径字符串，多次应用 formatTargetDir 函数应该产生相同的结果（幂等性）。
+
+_对于任何_ 目录路径字符串，多次应用 formatTargetDir 函数应该产生相同的结果（幂等性）。
 **Validates: Requirements 1.3**
 
 ### Property 4: 包名称验证和转换正确性
-*对于任何* 字符串，如果它不是有效的 npm 包名称，toValidPackageName 函数应该将其转换为有效的包名称，且转换后的名称应该通过 isValidPackageName 验证。
+
+_对于任何_ 字符串，如果它不是有效的 npm 包名称，toValidPackageName 函数应该将其转换为有效的包名称，且转换后的名称应该通过 isValidPackageName 验证。
 **Validates: Requirements 2.5, 10.5**
 
 ### Property 5: 模板完整性
-*对于任何* 模板目录，它应该包含所有必需的文件：package.json、README.md、_gitignore（或 .gitignore）、rolldown 配置文件，以及如果是 TypeScript 变体则包含 tsconfig.json。
+
+_对于任何_ 模板目录，它应该包含所有必需的文件：package.json、README.md、\_gitignore（或 .gitignore）、rolldown 配置文件，以及如果是 TypeScript 变体则包含 tsconfig.json。
 **Validates: Requirements 3.4, 9.1, 9.2, 9.3, 9.4, 9.5**
 
 ### Property 6: 框架变体对称性
-*对于任何* 支持 TypeScript 的框架，如果存在 TypeScript 变体，则必须存在对应的 JavaScript 变体。
+
+_对于任何_ 支持 TypeScript 的框架，如果存在 TypeScript 变体，则必须存在对应的 JavaScript 变体。
 **Validates: Requirements 3.2**
 
 ### Property 7: 文件重命名一致性
-*对于任何* 需要重命名的文件（如 _gitignore），在复制到目标目录后，文件名应该根据 renameFiles 映射正确转换。
+
+_对于任何_ 需要重命名的文件（如 \_gitignore），在复制到目标目录后，文件名应该根据 renameFiles 映射正确转换。
 **Validates: Requirements 3.6**
 
 ### Property 8: 目录结构保持性
-*对于任何* 模板目录，复制后的目标目录应该保持与模板相同的目录结构（文件和子目录的相对路径关系）。
+
+_对于任何_ 模板目录，复制后的目标目录应该保持与模板相同的目录结构（文件和子目录的相对路径关系）。
 **Validates: Requirements 4.1, 4.2**
 
 ### Property 9: package.json 名称替换正确性
-*对于任何* 有效的包名称和模板，生成的 package.json 文件中的 name 字段应该等于用户指定的包名称。
+
+_对于任何_ 有效的包名称和模板，生成的 package.json 文件中的 name 字段应该等于用户指定的包名称。
 **Validates: Requirements 4.3**
 
 ### Property 10: index.html 标题更新正确性
-*对于任何* 项目名称和模板，生成的 index.html 文件中的 title 标签内容应该等于用户指定的项目名称。
+
+_对于任何_ 项目名称和模板，生成的 index.html 文件中的 title 标签内容应该等于用户指定的项目名称。
 **Validates: Requirements 4.4**
 
 ### Property 11: 目录清空保留 .git
-*对于任何* 包含 .git 目录的非空目录，调用 emptyDir 后，.git 目录应该保留，其他文件和目录应该被删除。
+
+_对于任何_ 包含 .git 目录的非空目录，调用 emptyDir 后，.git 目录应该保留，其他文件和目录应该被删除。
 **Validates: Requirements 4.6**
 
 ### Property 12: 包管理器命令格式正确性
-*对于任何* 支持的包管理器（npm、pnpm、yarn、bun、deno），getInstallCommand 和 getRunCommand 应该返回该包管理器的正确命令格式。
+
+_对于任何_ 支持的包管理器（npm、pnpm、yarn、bun、deno），getInstallCommand 和 getRunCommand 应该返回该包管理器的正确命令格式。
 **Validates: Requirements 5.3, 6.2**
 
 ### Property 13: 错误处理一致性
-*对于任何* 导致错误的操作（命令执行失败、文件系统错误、用户取消），CLI 应该显示有意义的错误消息并以非零状态码退出（或在取消时优雅退出）。
+
+_对于任何_ 导致错误的操作（命令执行失败、文件系统错误、用户取消），CLI 应该显示有意义的错误消息并以非零状态码退出（或在取消时优雅退出）。
 **Validates: Requirements 8.1, 8.2, 8.3, 8.4**
 
 ### Property 14: 非交互模式默认值正确性
-*对于任何* 在非交互模式下未提供的必需参数，CLI 应该使用正确的默认值（项目名称为 "rolldown-project"，模板为 "vanilla-ts"）。
+
+_对于任何_ 在非交互模式下未提供的必需参数，CLI 应该使用正确的默认值（项目名称为 "rolldown-project"，模板为 "vanilla-ts"）。
 **Validates: Requirements 10.2, 10.3**
 
 ### Property 15: 包名称转换往返一致性
-*对于任何* 已经是有效包名称的字符串，应用 toValidPackageName 后应该保持不变或产生等价的有效名称。
+
+_对于任何_ 已经是有效包名称的字符串，应用 toValidPackageName 后应该保持不变或产生等价的有效名称。
 **Validates: Requirements 2.5, 10.5**
-
-
 
 ## Error Handling
 
@@ -337,6 +351,7 @@ const defaultTemplate = 'vanilla-ts'
 ### 错误消息格式
 
 所有错误消息应该：
+
 - 清晰描述问题
 - 提供可能的解决方案（如果适用）
 - 使用适当的颜色编码（红色表示错误）
@@ -355,6 +370,7 @@ const defaultTemplate = 'vanilla-ts'
 ### 单元测试
 
 单元测试应该专注于：
+
 - **特定示例**：验证核心功能的具体用例
 - **边缘情况**：空字符串、特殊字符、极长路径等
 - **错误条件**：无效输入、文件系统错误、命令执行失败
@@ -363,6 +379,7 @@ const defaultTemplate = 'vanilla-ts'
 **测试框架**：Vitest
 
 **测试文件组织**：
+
 ```
 src/
 ├── index.ts
@@ -372,6 +389,7 @@ src/
 ### 基于属性的测试
 
 属性测试应该专注于：
+
 - **通用属性**：应该对所有输入保持为真的规则
 - **不变量**：操作前后保持不变的属性
 - **往返属性**：序列化/反序列化、格式化/解析等
@@ -380,6 +398,7 @@ src/
 **测试框架**：fast-check（JavaScript/TypeScript 的属性测试库）
 
 **配置要求**：
+
 - 每个属性测试至少运行 100 次迭代
 - 每个测试必须引用设计文档中的属性
 - 标签格式：`// Feature: create-rolldown, Property {number}: {property_text}`
@@ -387,34 +406,34 @@ src/
 **示例属性测试**：
 
 ```typescript
-import fc from 'fast-check'
-import { describe, it, expect } from 'vitest'
-import { formatTargetDir } from './index'
+import fc from 'fast-check';
+import { describe, it, expect } from 'vitest';
+import { formatTargetDir } from './index';
 
 describe('Property Tests', () => {
   it('Property 3: Directory name formatting idempotence', () => {
     // Feature: create-rolldown, Property 3: 目录名称格式化幂等性
     fc.assert(
       fc.property(fc.string(), (dirName) => {
-        const formatted1 = formatTargetDir(dirName)
-        const formatted2 = formatTargetDir(formatted1)
-        expect(formatted1).toBe(formatted2)
+        const formatted1 = formatTargetDir(dirName);
+        const formatted2 = formatTargetDir(formatted1);
+        expect(formatted1).toBe(formatted2);
       }),
       { numRuns: 100 }
-    )
-  })
+    );
+  });
 
   it('Property 4: Package name validation and conversion', () => {
     // Feature: create-rolldown, Property 4: 包名称验证和转换正确性
     fc.assert(
       fc.property(fc.string(), (name) => {
-        const validName = toValidPackageName(name)
-        expect(isValidPackageName(validName)).toBe(true)
+        const validName = toValidPackageName(name);
+        expect(isValidPackageName(validName)).toBe(true);
       }),
       { numRuns: 100 }
-    )
-  })
-})
+    );
+  });
+});
 ```
 
 ### 测试覆盖目标
@@ -433,6 +452,7 @@ describe('Property Tests', () => {
 ### 集成测试
 
 除了单元测试和属性测试，还应该包括端到端的集成测试：
+
 - 完整的项目创建流程
 - 不同模板的生成
 - 不同包管理器的使用
@@ -460,6 +480,7 @@ describe('Property Tests', () => {
 ### 发布配置
 
 package.json 配置：
+
 ```json
 {
   "name": "create-rolldown",
@@ -469,11 +490,7 @@ package.json 配置：
   "bin": {
     "create-rolldown": "index.js"
   },
-  "files": [
-    "index.js",
-    "template-*",
-    "dist"
-  ],
+  "files": ["index.js", "template-*", "dist"],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   }
@@ -483,6 +500,7 @@ package.json 配置：
 ### 模板开发指南
 
 创建新模板时：
+
 1. 创建 `template-{name}` 目录
 2. 添加完整的项目结构
 3. 使用 `_gitignore` 而不是 `.gitignore`

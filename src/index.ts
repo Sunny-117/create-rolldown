@@ -1,49 +1,49 @@
 // create-rolldown - Scaffolding tool for Rolldown projects
 // Main entry point
 
-import fs from 'node:fs'
-import path from 'node:path'
-import { SpawnOptions } from 'node:child_process'
-import mri from 'mri'
-import pc from 'picocolors'
-import * as prompts from '@clack/prompts'
-import spawn from 'cross-spawn'
+import fs from 'node:fs';
+import path from 'node:path';
+import { SpawnOptions } from 'node:child_process';
+import mri from 'mri';
+import pc from 'picocolors';
+import * as prompts from '@clack/prompts';
+import spawn from 'cross-spawn';
 
 /**
  * CLI Arguments interface
  */
 export interface CLIArguments {
-  _: string[]                    // Positional arguments
-  template?: string              // Template name (-t, --template)
-  help?: boolean                 // Show help (-h, --help)
-  overwrite?: boolean            // Overwrite existing files (--overwrite)
-  immediate?: boolean            // Install and start immediately (-i, --immediate)
-  interactive?: boolean          // Force interactive/non-interactive mode (--interactive, --no-interactive)
+  _: string[]; // Positional arguments
+  template?: string; // Template name (-t, --template)
+  help?: boolean; // Show help (-h, --help)
+  overwrite?: boolean; // Overwrite existing files (--overwrite)
+  immediate?: boolean; // Install and start immediately (-i, --immediate)
+  interactive?: boolean; // Force interactive/non-interactive mode (--interactive, --no-interactive)
 }
 
 /**
  * Color function type for framework display
  */
-export type ColorFunc = (str: string | number) => string
+export type ColorFunc = (str: string | number) => string;
 
 /**
  * Framework variant interface
  */
 export interface FrameworkVariant {
-  name: string                   // Variant identifier (template name)
-  display: string                // Display name
-  color: ColorFunc               // Color function
-  customCommand?: string         // Custom creation command (optional)
+  name: string; // Variant identifier (template name)
+  display: string; // Display name
+  color: ColorFunc; // Color function
+  customCommand?: string; // Custom creation command (optional)
 }
 
 /**
  * Framework interface
  */
 export interface Framework {
-  name: string                   // Framework identifier
-  display: string                // Display name
-  color: ColorFunc               // Color function
-  variants: FrameworkVariant[]   // Variant list
+  name: string; // Framework identifier
+  display: string; // Display name
+  color: ColorFunc; // Color function
+  variants: FrameworkVariant[]; // Variant list
 }
 
 /**
@@ -152,21 +152,19 @@ export const FRAMEWORKS: Framework[] = [
       },
     ],
   },
-]
+];
 
 /**
  * All available template names (flat list)
  */
-export const TEMPLATES: string[] = FRAMEWORKS.map((f) =>
-  f.variants.map((v) => v.name)
-).flat()
+export const TEMPLATES: string[] = FRAMEWORKS.map((f) => f.variants.map((v) => v.name)).flat();
 
 /**
  * File rename mappings for special files
  */
 export const renameFiles: Record<string, string | undefined> = {
   _gitignore: '.gitignore',
-}
+};
 
 /**
  * Exit the process (skipped in test mode)
@@ -174,7 +172,7 @@ export const renameFiles: Record<string, string | undefined> = {
  */
 function exitProcess(code: number): void {
   if (!process.env._ROLLDOWN_TEST_CLI) {
-    process.exit(code)
+    process.exit(code);
   }
 }
 
@@ -184,7 +182,7 @@ function exitProcess(code: number): void {
  * @returns Formatted directory path
  */
 export function formatTargetDir(targetDir: string | undefined): string {
-  return targetDir?.trim().replace(/\/+$/g, '') ?? ''
+  return targetDir?.trim().replace(/\/+$/g, '') ?? '';
 }
 
 /**
@@ -193,9 +191,7 @@ export function formatTargetDir(targetDir: string | undefined): string {
  * @returns true if valid, false otherwise
  */
 export function isValidPackageName(projectName: string): boolean {
-  return /^(?:@[a-z0-9-*~][a-z0-9-*._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(
-    projectName
-  )
+  return /^(?:@[a-z0-9-*~][a-z0-9-*._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(projectName);
 }
 
 /**
@@ -209,10 +205,10 @@ export function toValidPackageName(projectName: string): string {
     .toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/^[._]/, '')
-    .replace(/[^a-z0-9-~]+/g, '-')
-  
+    .replace(/[^a-z0-9-~]+/g, '-');
+
   // If the result is empty or invalid, return a default valid name
-  return converted || 'package'
+  return converted || 'package';
 }
 
 /**
@@ -221,8 +217,8 @@ export function toValidPackageName(projectName: string): string {
  * @returns true if empty or only contains .git, false otherwise
  */
 export function isEmpty(path: string): boolean {
-  const files = fs.readdirSync(path)
-  return files.length === 0 || (files.length === 1 && files[0] === '.git')
+  const files = fs.readdirSync(path);
+  return files.length === 0 || (files.length === 1 && files[0] === '.git');
 }
 
 /**
@@ -232,20 +228,20 @@ export function isEmpty(path: string): boolean {
  */
 export function emptyDir(dir: string): void {
   if (!fs.existsSync(dir)) {
-    return
+    return;
   }
   try {
     for (const file of fs.readdirSync(dir)) {
       if (file === '.git') {
-        continue
+        continue;
       }
-      fs.rmSync(path.resolve(dir, file), { recursive: true, force: true })
+      fs.rmSync(path.resolve(dir, file), { recursive: true, force: true });
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to empty directory ${dir}: ${error.message}`)
+      throw new Error(`Failed to empty directory ${dir}: ${error.message}`);
     }
-    throw error
+    throw error;
   }
 }
 
@@ -257,17 +253,17 @@ export function emptyDir(dir: string): void {
  */
 export function copy(src: string, dest: string): void {
   try {
-    const stat = fs.statSync(src)
+    const stat = fs.statSync(src);
     if (stat.isDirectory()) {
-      copyDir(src, dest)
+      copyDir(src, dest);
     } else {
-      fs.copyFileSync(src, dest)
+      fs.copyFileSync(src, dest);
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to copy from ${src} to ${dest}: ${error.message}`)
+      throw new Error(`Failed to copy from ${src} to ${dest}: ${error.message}`);
     }
-    throw error
+    throw error;
   }
 }
 
@@ -279,17 +275,17 @@ export function copy(src: string, dest: string): void {
  */
 export function copyDir(srcDir: string, destDir: string): void {
   try {
-    fs.mkdirSync(destDir, { recursive: true })
+    fs.mkdirSync(destDir, { recursive: true });
     for (const file of fs.readdirSync(srcDir)) {
-      const srcFile = path.resolve(srcDir, file)
-      const destFile = path.resolve(destDir, file)
-      copy(srcFile, destFile)
+      const srcFile = path.resolve(srcDir, file);
+      const destFile = path.resolve(destDir, file);
+      copy(srcFile, destFile);
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to copy directory from ${srcDir} to ${destDir}: ${error.message}`)
+      throw new Error(`Failed to copy directory from ${srcDir} to ${destDir}: ${error.message}`);
     }
-    throw error
+    throw error;
   }
 }
 
@@ -300,11 +296,11 @@ export function copyDir(srcDir: string, destDir: string): void {
  * @param content - Optional content to write (if undefined, copies from template)
  */
 export function write(file: string, content?: string): void {
-  const targetPath = renameFiles[path.basename(file)] ?? file
+  const targetPath = renameFiles[path.basename(file)] ?? file;
   if (content) {
-    fs.writeFileSync(targetPath, content)
+    fs.writeFileSync(targetPath, content);
   } else {
-    copy(file, targetPath)
+    copy(file, targetPath);
   }
 }
 
@@ -314,8 +310,8 @@ export function write(file: string, content?: string): void {
  * @param callback - Function that transforms the file content
  */
 export function editFile(file: string, callback: (content: string) => string): void {
-  const content = fs.readFileSync(file, 'utf-8')
-  fs.writeFileSync(file, callback(content))
+  const content = fs.readFileSync(file, 'utf-8');
+  fs.writeFileSync(file, callback(content));
 }
 
 /**
@@ -334,58 +330,58 @@ export function copyTemplate(
 ): void {
   // Validate template directory exists
   if (!fs.existsSync(templateDir)) {
-    throw new Error(`Template directory not found: ${templateDir}`)
+    throw new Error(`Template directory not found: ${templateDir}`);
   }
-  
+
   try {
     // Create target directory if it doesn't exist
     if (!fs.existsSync(root)) {
-      fs.mkdirSync(root, { recursive: true })
+      fs.mkdirSync(root, { recursive: true });
     }
-    
-    const files = fs.readdirSync(templateDir)
-    
+
+    const files = fs.readdirSync(templateDir);
+
     for (const file of files) {
-      const srcFile = path.join(templateDir, file)
-      const stat = fs.statSync(srcFile)
-      
+      const srcFile = path.join(templateDir, file);
+      const stat = fs.statSync(srcFile);
+
       if (stat.isDirectory()) {
         // Recursively copy directories
-        const destDir = path.join(root, file)
-        copyDir(srcFile, destDir)
+        const destDir = path.join(root, file);
+        copyDir(srcFile, destDir);
       } else {
         // Handle file renaming for special files
-        const destFileName = renameFiles[file] ?? file
-        const destFile = path.join(root, destFileName)
-        
+        const destFileName = renameFiles[file] ?? file;
+        const destFile = path.join(root, destFileName);
+
         // Copy the file
-        fs.copyFileSync(srcFile, destFile)
+        fs.copyFileSync(srcFile, destFile);
       }
     }
-    
+
     // Update package.json with the correct package name
-    const pkgJsonPath = path.join(root, 'package.json')
+    const pkgJsonPath = path.join(root, 'package.json');
     if (fs.existsSync(pkgJsonPath)) {
       editFile(pkgJsonPath, (content) => {
-        const pkg = JSON.parse(content)
-        pkg.name = packageName
-        return JSON.stringify(pkg, null, 2) + '\n'
-      })
+        const pkg = JSON.parse(content);
+        pkg.name = packageName;
+        return JSON.stringify(pkg, null, 2) + '\n';
+      });
     }
-    
+
     // Update index.html with the correct project name
-    const indexHtmlPath = path.join(root, 'index.html')
+    const indexHtmlPath = path.join(root, 'index.html');
     if (fs.existsSync(indexHtmlPath)) {
       editFile(indexHtmlPath, (content) => {
         // Use a replacement function to avoid issues with special regex characters
-        return content.replace(/<title>.*?<\/title>/, () => `<title>${projectName}</title>`)
-      })
+        return content.replace(/<title>.*?<\/title>/, () => `<title>${projectName}</title>`);
+      });
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to copy template: ${error.message}`)
+      throw new Error(`Failed to copy template: ${error.message}`);
     }
-    throw error
+    throw error;
   }
 }
 
@@ -393,8 +389,8 @@ export function copyTemplate(
  * Package manager information
  */
 export interface PkgInfo {
-  name: string
-  version: string
+  name: string;
+  version: string;
 }
 
 /**
@@ -402,20 +398,18 @@ export interface PkgInfo {
  * @param userAgent - The user agent string (typically from npm_config_user_agent)
  * @returns Package manager info or undefined if not found
  */
-export function pkgFromUserAgent(
-  userAgent: string | undefined
-): PkgInfo | undefined {
-  if (!userAgent) return undefined
-  
-  const pkgSpec = userAgent.split(' ')[0]
-  const pkgSpecArr = pkgSpec.split('/')
-  
-  if (pkgSpecArr.length !== 2) return undefined
-  
+export function pkgFromUserAgent(userAgent: string | undefined): PkgInfo | undefined {
+  if (!userAgent) return undefined;
+
+  const pkgSpec = userAgent.split(' ')[0];
+  const pkgSpecArr = pkgSpec.split('/');
+
+  if (pkgSpecArr.length !== 2) return undefined;
+
   return {
     name: pkgSpecArr[0],
     version: pkgSpecArr[1],
-  }
+  };
 }
 
 /**
@@ -426,17 +420,17 @@ export function pkgFromUserAgent(
 export function getInstallCommand(agent: string): string[] {
   switch (agent) {
     case 'npm':
-      return ['npm', 'install']
+      return ['npm', 'install'];
     case 'pnpm':
-      return ['pnpm', 'install']
+      return ['pnpm', 'install'];
     case 'yarn':
-      return ['yarn']
+      return ['yarn'];
     case 'bun':
-      return ['bun', 'install']
+      return ['bun', 'install'];
     case 'deno':
-      return ['deno', 'install']
+      return ['deno', 'install'];
     default:
-      return ['npm', 'install']
+      return ['npm', 'install'];
   }
 }
 
@@ -449,17 +443,17 @@ export function getInstallCommand(agent: string): string[] {
 export function getRunCommand(agent: string, script: string): string[] {
   switch (agent) {
     case 'npm':
-      return ['npm', 'run', script]
+      return ['npm', 'run', script];
     case 'pnpm':
-      return ['pnpm', script]
+      return ['pnpm', script];
     case 'yarn':
-      return ['yarn', script]
+      return ['yarn', script];
     case 'bun':
-      return ['bun', 'run', script]
+      return ['bun', 'run', script];
     case 'deno':
-      return ['deno', 'task', script]
+      return ['deno', 'task', script];
     default:
-      return ['npm', 'run', script]
+      return ['npm', 'run', script];
   }
 }
 
@@ -481,8 +475,8 @@ export function parseArguments(argv: string[] = process.argv.slice(2)): CLIArgum
       immediate: undefined,
       interactive: undefined,
     },
-  })
-  
+  });
+
   return {
     _: args._,
     template: args.template,
@@ -490,7 +484,7 @@ export function parseArguments(argv: string[] = process.argv.slice(2)): CLIArgum
     overwrite: args.overwrite,
     immediate: args.immediate,
     interactive: args.interactive,
-  }
+  };
 }
 
 /**
@@ -515,7 +509,7 @@ Examples:
   $ npm create rolldown my-app --template react-ts
   $ npm create rolldown my-app -t vue --immediate
   $ npm create rolldown my-app --no-interactive --template vanilla-ts
-`)
+`);
 }
 
 /**
@@ -526,19 +520,17 @@ Examples:
 export function shouldUseInteractiveMode(args: CLIArguments): boolean {
   // If explicitly set via --interactive or --no-interactive, use that
   if (args.interactive !== undefined) {
-    return args.interactive
+    return args.interactive;
   }
-  
+
   // Check if running in a TTY environment
-  const isTTY = process.stdout.isTTY && process.stdin.isTTY
-  
+  const isTTY = process.stdout.isTTY && process.stdin.isTTY;
+
   // Check for AI agent environment (common CI/CD or agent indicators)
-  const isAIAgent = 
-    process.env.CI === 'true' ||
-    process.env.CONTINUOUS_INTEGRATION === 'true' ||
-    !isTTY
-  
-  return !isAIAgent
+  const isAIAgent =
+    process.env.CI === 'true' || process.env.CONTINUOUS_INTEGRATION === 'true' || !isTTY;
+
+  return !isAIAgent;
 }
 
 /**
@@ -553,17 +545,17 @@ export async function promptProjectName(defaultValue: string): Promise<string> {
     defaultValue,
     validate: (value) => {
       if (!value || value.trim().length === 0) {
-        return 'Project name cannot be empty'
+        return 'Project name cannot be empty';
       }
     },
-  })
-  
+  });
+
   if (prompts.isCancel(result)) {
-    prompts.cancel('Operation cancelled')
-    exitProcess(0)
+    prompts.cancel('Operation cancelled');
+    exitProcess(0);
   }
-  
-  return result as string
+
+  return result as string;
 }
 
 /**
@@ -571,12 +563,10 @@ export async function promptProjectName(defaultValue: string): Promise<string> {
  * @param targetDir - The target directory path
  * @returns User's choice: 'yes' (overwrite), 'no' (cancel), or 'ignore' (merge)
  */
-export async function promptOverwrite(
-  targetDir: string
-): Promise<'yes' | 'no' | 'ignore'> {
-  const displayDir = targetDir === '.' ? 'Current directory' : `Target directory "${targetDir}"`
-  const message = `${displayDir} is not empty. Please choose how to proceed:`
-  
+export async function promptOverwrite(targetDir: string): Promise<'yes' | 'no' | 'ignore'> {
+  const displayDir = targetDir === '.' ? 'Current directory' : `Target directory "${targetDir}"`;
+  const message = `${displayDir} is not empty. Please choose how to proceed:`;
+
   const result = await prompts.select({
     message,
     options: [
@@ -593,14 +583,14 @@ export async function promptOverwrite(
         label: 'Ignore files and continue',
       },
     ],
-  })
-  
+  });
+
   if (prompts.isCancel(result)) {
-    prompts.cancel('Operation cancelled')
-    exitProcess(0)
+    prompts.cancel('Operation cancelled');
+    exitProcess(0);
   }
-  
-  return result as 'yes' | 'no' | 'ignore'
+
+  return result as 'yes' | 'no' | 'ignore';
 }
 
 /**
@@ -615,20 +605,20 @@ export async function promptPackageName(defaultValue: string): Promise<string> {
     defaultValue,
     validate: (value) => {
       if (!value || value.trim().length === 0) {
-        return 'Package name cannot be empty'
+        return 'Package name cannot be empty';
       }
       if (!isValidPackageName(value)) {
-        return 'Invalid package name (must follow npm naming conventions)'
+        return 'Invalid package name (must follow npm naming conventions)';
       }
     },
-  })
-  
+  });
+
   if (prompts.isCancel(result)) {
-    prompts.cancel('Operation cancelled')
-    exitProcess(0)
+    prompts.cancel('Operation cancelled');
+    exitProcess(0);
   }
-  
-  return result as string
+
+  return result as string;
 }
 
 /**
@@ -636,23 +626,21 @@ export async function promptPackageName(defaultValue: string): Promise<string> {
  * @param frameworks - Array of available frameworks
  * @returns Selected framework
  */
-export async function promptFramework(
-  frameworks: Framework[]
-): Promise<Framework> {
+export async function promptFramework(frameworks: Framework[]): Promise<Framework> {
   const result = await prompts.select({
     message: 'Select a framework:',
     options: frameworks.map((framework) => ({
       value: framework,
       label: framework.color(framework.display),
     })),
-  })
-  
+  });
+
   if (prompts.isCancel(result)) {
-    prompts.cancel('Operation cancelled')
-    exitProcess(0)
+    prompts.cancel('Operation cancelled');
+    exitProcess(0);
   }
-  
-  return result as Framework
+
+  return result as Framework;
 }
 
 /**
@@ -660,23 +648,21 @@ export async function promptFramework(
  * @param variants - Array of available variants
  * @returns Selected variant name (template name)
  */
-export async function promptVariant(
-  variants: FrameworkVariant[]
-): Promise<string> {
+export async function promptVariant(variants: FrameworkVariant[]): Promise<string> {
   const result = await prompts.select({
     message: 'Select a variant:',
     options: variants.map((variant) => ({
       value: variant.name,
       label: variant.color(variant.display),
     })),
-  })
-  
+  });
+
   if (prompts.isCancel(result)) {
-    prompts.cancel('Operation cancelled')
-    exitProcess(0)
+    prompts.cancel('Operation cancelled');
+    exitProcess(0);
   }
-  
-  return result as string
+
+  return result as string;
 }
 
 /**
@@ -688,14 +674,14 @@ export async function promptImmediate(pkgManager: string): Promise<boolean> {
   const result = await prompts.confirm({
     message: `Install dependencies and start dev server with ${pkgManager}?`,
     initialValue: false,
-  })
-  
+  });
+
   if (prompts.isCancel(result)) {
-    prompts.cancel('Operation cancelled')
-    exitProcess(0)
+    prompts.cancel('Operation cancelled');
+    exitProcess(0);
   }
-  
-  return result as boolean
+
+  return result as boolean;
 }
 
 /**
@@ -707,31 +693,33 @@ export async function promptImmediate(pkgManager: string): Promise<boolean> {
 export function run(command: string[], options?: SpawnOptions): void {
   // Skip actual command execution in test environment
   if (process.env._ROLLDOWN_TEST_CLI) {
-    return
+    return;
   }
-  
-  const [cmd, ...args] = command
-  
+
+  const [cmd, ...args] = command;
+
   try {
     const result = spawn.sync(cmd, args, {
       stdio: 'inherit',
       ...options,
-    })
-    
+    });
+
     if (result.error) {
-      throw new Error(`Failed to execute command: ${cmd} ${args.join(' ')}\n${result.error.message}`)
+      throw new Error(
+        `Failed to execute command: ${cmd} ${args.join(' ')}\n${result.error.message}`
+      );
     }
-    
+
     if (result.status !== 0) {
-      throw new Error(`Command failed with exit code ${result.status}: ${cmd} ${args.join(' ')}`)
+      throw new Error(`Command failed with exit code ${result.status}: ${cmd} ${args.join(' ')}`);
     }
   } catch (error) {
     if (error instanceof Error) {
-      console.error(pc.red(`\n✗ Command execution failed: ${error.message}`))
+      console.error(pc.red(`\n✗ Command execution failed: ${error.message}`));
     } else {
-      console.error(pc.red(`\n✗ Command execution failed: ${String(error)}`))
+      console.error(pc.red(`\n✗ Command execution failed: ${String(error)}`));
     }
-    throw error
+    throw error;
   }
 }
 
@@ -742,22 +730,22 @@ export function run(command: string[], options?: SpawnOptions): void {
  * @throws Error if installation fails
  */
 export function install(root: string, agent: string): void {
-  const installCmd = getInstallCommand(agent)
-  console.log(pc.cyan(`\nInstalling dependencies with ${agent}...`))
-  
+  const installCmd = getInstallCommand(agent);
+  console.log(pc.cyan(`\nInstalling dependencies with ${agent}...`));
+
   // Skip actual installation in test environment
   if (process.env._ROLLDOWN_TEST_CLI) {
-    return
+    return;
   }
-  
+
   try {
-    run(installCmd, { cwd: root })
+    run(installCmd, { cwd: root });
   } catch (error) {
-    console.error(pc.red(`\n✗ Failed to install dependencies with ${agent}`))
+    console.error(pc.red(`\n✗ Failed to install dependencies with ${agent}`));
     if (error instanceof Error) {
-      console.error(pc.red(`Error: ${error.message}`))
+      console.error(pc.red(`Error: ${error.message}`));
     }
-    throw error
+    throw error;
   }
 }
 
@@ -768,22 +756,22 @@ export function install(root: string, agent: string): void {
  * @throws Error if server start fails
  */
 export function start(root: string, agent: string): void {
-  const runCmd = getRunCommand(agent, 'dev')
-  console.log(pc.cyan(`\nStarting dev server...`))
-  
+  const runCmd = getRunCommand(agent, 'dev');
+  console.log(pc.cyan(`\nStarting dev server...`));
+
   // Skip actual server start in test environment
   if (process.env._ROLLDOWN_TEST_CLI) {
-    return
+    return;
   }
-  
+
   try {
-    run(runCmd, { cwd: root })
+    run(runCmd, { cwd: root });
   } catch (error) {
-    console.error(pc.red(`\n✗ Failed to start dev server with ${agent}`))
+    console.error(pc.red(`\n✗ Failed to start dev server with ${agent}`));
     if (error instanceof Error) {
-      console.error(pc.red(`Error: ${error.message}`))
+      console.error(pc.red(`Error: ${error.message}`));
     }
-    throw error
+    throw error;
   }
 }
 
@@ -793,203 +781,215 @@ export function start(root: string, agent: string): void {
  */
 export async function init(): Promise<void> {
   try {
-    const args = parseArguments()
-    
+    const args = parseArguments();
+
     // Display help if requested
     if (args.help) {
-      displayHelp()
-      return
+      displayHelp();
+      return;
     }
-    
+
     // Detect interactive mode
-    const interactive = shouldUseInteractiveMode(args)
-    
+    const interactive = shouldUseInteractiveMode(args);
+
     // Detect AI agent environment and provide guidance
     if (!interactive && !process.stdout.isTTY) {
-      console.log(pc.yellow('\nDetected non-interactive environment (AI agent or CI/CD).'))
-      console.log(pc.yellow('For best results, use: create-rolldown <project-name> --template <template> --no-interactive\n'))
+      console.log(pc.yellow('\nDetected non-interactive environment (AI agent or CI/CD).'));
+      console.log(
+        pc.yellow(
+          'For best results, use: create-rolldown <project-name> --template <template> --no-interactive\n'
+        )
+      );
     }
-    
+
     // Get target directory from arguments or use default
-    const defaultProjectName = 'rolldown-project'
-    let targetDir = formatTargetDir(args._[0])
-    
+    const defaultProjectName = 'rolldown-project';
+    let targetDir = formatTargetDir(args._[0]);
+
     // Get project name (interactive or from args)
-    let projectName: string
+    let projectName: string;
     if (interactive && !targetDir) {
-      projectName = await promptProjectName(defaultProjectName)
-      targetDir = formatTargetDir(projectName)
+      projectName = await promptProjectName(defaultProjectName);
+      targetDir = formatTargetDir(projectName);
     } else {
-      projectName = targetDir || defaultProjectName
-      targetDir = projectName
+      projectName = targetDir || defaultProjectName;
+      targetDir = projectName;
     }
-    
+
     // Resolve to absolute path
-    const root = path.resolve(process.cwd(), targetDir)
-    
+    const root = path.resolve(process.cwd(), targetDir);
+
     // Handle directory conflicts
     if (fs.existsSync(root) && !isEmpty(root)) {
       if (interactive) {
-        const overwrite = await promptOverwrite(targetDir)
-        
+        const overwrite = await promptOverwrite(targetDir);
+
         if (overwrite === 'no') {
-          console.log(pc.red('\nOperation cancelled'))
-          exitProcess(0)
+          console.log(pc.red('\nOperation cancelled'));
+          exitProcess(0);
         } else if (overwrite === 'yes') {
-          console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
+          console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`));
           try {
-            emptyDir(root)
+            emptyDir(root);
           } catch (error) {
-            console.error(pc.red(`\n✗ Failed to remove existing files`))
+            console.error(pc.red(`\n✗ Failed to remove existing files`));
             if (error instanceof Error) {
-              console.error(pc.red(`Error: ${error.message}`))
+              console.error(pc.red(`Error: ${error.message}`));
             }
-            exitProcess(1)
+            exitProcess(1);
           }
         }
         // If 'ignore', continue without clearing
       } else {
         // Non-interactive mode
         if (args.overwrite) {
-          console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
+          console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`));
           try {
-            emptyDir(root)
+            emptyDir(root);
           } catch (error) {
-            console.error(pc.red(`\n✗ Failed to remove existing files`))
+            console.error(pc.red(`\n✗ Failed to remove existing files`));
             if (error instanceof Error) {
-              console.error(pc.red(`Error: ${error.message}`))
+              console.error(pc.red(`Error: ${error.message}`));
             }
-            exitProcess(1)
+            exitProcess(1);
           }
         } else {
-          console.log(pc.red(`\nTarget directory "${targetDir}" is not empty.`))
-          console.log(pc.red('Use --overwrite flag to overwrite existing files, or choose a different directory.'))
-          exitProcess(1)
+          console.log(pc.red(`\nTarget directory "${targetDir}" is not empty.`));
+          console.log(
+            pc.red(
+              'Use --overwrite flag to overwrite existing files, or choose a different directory.'
+            )
+          );
+          exitProcess(1);
         }
       }
     }
-    
+
     // Get package name
-    let packageName = toValidPackageName(projectName)
+    let packageName = toValidPackageName(projectName);
     if (interactive && !isValidPackageName(projectName)) {
-      packageName = await promptPackageName(packageName)
+      packageName = await promptPackageName(packageName);
     }
-    
+
     // Get template
-    let template = args.template
-    
+    let template = args.template;
+
     if (interactive && !template) {
       // Prompt for framework
-      const framework = await promptFramework(FRAMEWORKS)
-      
+      const framework = await promptFramework(FRAMEWORKS);
+
       // Prompt for variant
-      template = await promptVariant(framework.variants)
+      template = await promptVariant(framework.variants);
     } else if (!template) {
       // Non-interactive mode without template - use default
-      template = 'vanilla-ts'
+      template = 'vanilla-ts';
     }
-    
+
     // Validate template
     if (!TEMPLATES.includes(template)) {
       if (interactive) {
-        console.log(pc.yellow(`\n"${template}" isn't a valid template. Please choose from below:\n`))
-        const framework = await promptFramework(FRAMEWORKS)
-        template = await promptVariant(framework.variants)
+        console.log(
+          pc.yellow(`\n"${template}" isn't a valid template. Please choose from below:\n`)
+        );
+        const framework = await promptFramework(FRAMEWORKS);
+        template = await promptVariant(framework.variants);
       } else {
-        console.log(pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla-ts".\n`))
-        template = 'vanilla-ts'
+        console.log(
+          pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla-ts".\n`)
+        );
+        template = 'vanilla-ts';
       }
     }
-    
+
     // Detect package manager
-    const pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent)
-    const pkgManager = pkgInfo?.name || 'npm'
-    
+    const pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent);
+    const pkgManager = pkgInfo?.name || 'npm';
+
     // Ask about immediate installation (interactive only)
-    let shouldInstall = false
+    let shouldInstall = false;
     if (args.immediate === true) {
-      shouldInstall = true
+      shouldInstall = true;
     } else if (args.immediate === false) {
-      shouldInstall = false
+      shouldInstall = false;
     } else if (interactive) {
-      shouldInstall = await promptImmediate(pkgManager)
+      shouldInstall = await promptImmediate(pkgManager);
     }
-    
+
     // Start scaffolding
-    console.log(pc.cyan(`\nScaffolding project in ${root}...`))
-    
+    console.log(pc.cyan(`\nScaffolding project in ${root}...`));
+
     // Get template directory
     const templateDir = path.resolve(
       path.dirname(new URL(import.meta.url).pathname),
       '..',
       `template-${template}`
-    )
-    
+    );
+
     // Create target directory if it doesn't exist
     try {
       if (!fs.existsSync(root)) {
-        fs.mkdirSync(root, { recursive: true })
+        fs.mkdirSync(root, { recursive: true });
       }
     } catch (error) {
-      console.error(pc.red(`\n✗ Failed to create project directory`))
+      console.error(pc.red(`\n✗ Failed to create project directory`));
       if (error instanceof Error) {
-        console.error(pc.red(`Error: ${error.message}`))
+        console.error(pc.red(`Error: ${error.message}`));
       }
-      exitProcess(1)
+      exitProcess(1);
     }
-    
+
     // Copy template files
     try {
-      copyTemplate(templateDir, root, projectName, packageName)
+      copyTemplate(templateDir, root, projectName, packageName);
     } catch (error) {
-      console.error(pc.red(`\n✗ Failed to copy template files`))
+      console.error(pc.red(`\n✗ Failed to copy template files`));
       if (error instanceof Error) {
-        console.error(pc.red(`Error: ${error.message}`))
+        console.error(pc.red(`Error: ${error.message}`));
       }
-      exitProcess(1)
+      exitProcess(1);
     }
-    
-    console.log(pc.green('\n✓ Project created successfully!'))
-    
+
+    console.log(pc.green('\n✓ Project created successfully!'));
+
     // Install dependencies and start server if requested
     if (shouldInstall) {
       try {
-        install(root, pkgManager)
-        console.log(pc.green('\n✓ Dependencies installed successfully!'))
-        
-        start(root, pkgManager)
+        install(root, pkgManager);
+        console.log(pc.green('\n✓ Dependencies installed successfully!'));
+
+        start(root, pkgManager);
       } catch (error) {
-        console.error(pc.red('\n✗ Failed to install dependencies or start server'))
+        console.error(pc.red('\n✗ Failed to install dependencies or start server'));
         if (error instanceof Error) {
-          console.error(pc.red(`Error: ${error.message}`))
+          console.error(pc.red(`Error: ${error.message}`));
         }
-        exitProcess(1)
+        exitProcess(1);
       }
     } else {
       // Display next steps
-      console.log(pc.cyan('\nDone. Now run:\n'))
-      
-      const cdCommand = path.relative(process.cwd(), root)
+      console.log(pc.cyan('\nDone. Now run:\n'));
+
+      const cdCommand = path.relative(process.cwd(), root);
       if (cdCommand) {
-        console.log(pc.cyan(`  cd ${cdCommand}`))
+        console.log(pc.cyan(`  cd ${cdCommand}`));
       }
-      
-      const installCmd = getInstallCommand(pkgManager).join(' ')
-      console.log(pc.cyan(`  ${installCmd}`))
-      
-      const runCmd = getRunCommand(pkgManager, 'dev').join(' ')
-      console.log(pc.cyan(`  ${runCmd}`))
-      
-      console.log()
+
+      const installCmd = getInstallCommand(pkgManager).join(' ');
+      console.log(pc.cyan(`  ${installCmd}`));
+
+      const runCmd = getRunCommand(pkgManager, 'dev').join(' ');
+      console.log(pc.cyan(`  ${runCmd}`));
+
+      console.log();
     }
   } catch (error) {
     // Handle any unexpected errors
     if (error instanceof Error) {
-      console.error(pc.red(`\n✗ An unexpected error occurred: ${error.message}`))
+      console.error(pc.red(`\n✗ An unexpected error occurred: ${error.message}`));
     } else {
-      console.error(pc.red(`\n✗ An unexpected error occurred: ${String(error)}`))
+      console.error(pc.red(`\n✗ An unexpected error occurred: ${String(error)}`));
     }
-    exitProcess(1)
+    exitProcess(1);
   }
 }
 
@@ -997,9 +997,9 @@ export async function init(): Promise<void> {
 init().catch((error) => {
   // Error handling is already done in init(), but catch any unhandled errors
   if (error instanceof Error && error.message !== 'process.exit called with code 0') {
-    console.error(pc.red(`\n✗ Fatal error: ${error.message}`))
+    console.error(pc.red(`\n✗ Fatal error: ${error.message}`));
   }
   if (!process.env._ROLLDOWN_TEST_CLI && !process.env.VITEST) {
-    exitProcess(1)
+    exitProcess(1);
   }
-})
+});

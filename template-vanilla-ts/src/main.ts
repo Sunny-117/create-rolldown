@@ -1,4 +1,4 @@
-import './style.css'
+import './style.css';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <div>
@@ -10,12 +10,12 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       Click on the Rolldown logo to learn more
     </p>
   </div>
-`
+`;
 
-let counter = 0
-const button = document.querySelector<HTMLButtonElement>('#counter')!
+let counter = 0;
+const button = document.querySelector<HTMLButtonElement>('#counter')!;
 button.addEventListener('click', () => {
-  counter++
-  button.innerHTML = `count is ${counter}`
-})
-button.innerHTML = `count is ${counter}`
+  counter++;
+  button.innerHTML = `count is ${counter}`;
+});
+button.innerHTML = `count is ${counter}`;
