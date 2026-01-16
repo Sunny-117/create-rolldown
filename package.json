@@ -21,7 +21,14 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest --run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "prepare": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm format && pnpm lint"
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
@@ -36,6 +43,9 @@
     "@types/node": "^20.11.0",
     "execa": "^9.0.0",
     "fast-check": "^3.15.0",
+    "oxfmt": "^0.24.0",
+    "oxlint": "^0.17.0",
+    "simple-git-hooks": "^2.12.1",
     "tsdown": "^0.2.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
