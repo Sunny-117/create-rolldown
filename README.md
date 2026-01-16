@@ -15,9 +15,8 @@
 [![test](https://img.shields.io/badge/tests-77%20passed-brightgreen.svg)](https://github.com/sunny-117/create-rolldown)
 [![coverage](https://img.shields.io/badge/coverage-60.87%25-yellow.svg)](https://github.com/sunny-117/create-rolldown)
 
-## Introduction
 
-**Core Features:**
+## Features
 
 - 🚀 **Fast Setup** - Create a new Rolldown project in seconds
 - 🎨 **TypeScript First** - All templates use TypeScript by default
