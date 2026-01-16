@@ -17,4 +17,7 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    extensions: ['.ts', '.svelte'],
+  },
 });

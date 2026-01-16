@@ -1,4 +1,5 @@
 import { defineConfig } from 'rolldown';
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
   input: 'src/index.ts',
@@ -7,4 +8,5 @@ export default defineConfig({
     format: 'esm',
   },
   external: ['vue'],
+  plugins: [vue()],
 });
