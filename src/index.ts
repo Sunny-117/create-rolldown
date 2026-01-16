@@ -3,6 +3,19 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import mri from 'mri'
+
+/**
+ * CLI Arguments interface
+ */
+export interface CLIArguments {
+  _: string[]                    // Positional arguments
+  template?: string              // Template name (-t, --template)
+  help?: boolean                 // Show help (-h, --help)
+  overwrite?: boolean            // Overwrite existing files (--overwrite)
+  immediate?: boolean            // Install and start immediately (-i, --immediate)
+  interactive?: boolean          // Force interactive/non-interactive mode (--interactive, --no-interactive)
+}
 
 /**
  * Format target directory by removing trailing slashes and whitespace
@@ -169,9 +182,99 @@ export function getRunCommand(agent: string, script: string): string[] {
   }
 }
 
+/**
+ * Parse command line arguments
+ * @param argv - Command line arguments (defaults to process.argv.slice(2))
+ * @returns Parsed CLI arguments
+ */
+export function parseArguments(argv: string[] = process.argv.slice(2)): CLIArguments {
+  const args = mri(argv, {
+    alias: {
+      h: 'help',
+      t: 'template',
+      i: 'immediate',
+    },
+    boolean: ['help', 'overwrite', 'immediate', 'interactive'],
+    string: ['template'],
+  })
+  
+  return {
+    _: args._,
+    template: args.template,
+    help: args.help,
+    overwrite: args.overwrite,
+    immediate: args.immediate,
+    interactive: args.interactive,
+  }
+}
+
+/**
+ * Display help information
+ */
+export function displayHelp(): void {
+  console.log(`
+Usage: create-rolldown [project-name] [options]
+
+Options:
+  -t, --template <name>     Use a specific template
+  -h, --help                Display this help message
+  --overwrite               Overwrite existing files in target directory
+  -i, --immediate           Install dependencies and start dev server immediately
+  --interactive             Force interactive mode
+  --no-interactive          Force non-interactive mode
+
+Examples:
+  $ npm create rolldown
+  $ npm create rolldown my-app
+  $ npm create rolldown my-app --template react-ts
+  $ npm create rolldown my-app -t vue --immediate
+  $ npm create rolldown my-app --no-interactive --template vanilla-ts
+`)
+}
+
+/**
+ * Detect if CLI should run in interactive mode
+ * @param args - Parsed CLI arguments
+ * @returns true if interactive mode should be used
+ */
+export function shouldUseInteractiveMode(args: CLIArguments): boolean {
+  // If explicitly set via --interactive or --no-interactive, use that
+  if (args.interactive !== undefined) {
+    return args.interactive
+  }
+  
+  // Check if running in a TTY environment
+  const isTTY = process.stdout.isTTY && process.stdin.isTTY
+  
+  // Check for AI agent environment (common CI/CD or agent indicators)
+  const isAIAgent = 
+    process.env.CI === 'true' ||
+    process.env.CONTINUOUS_INTEGRATION === 'true' ||
+    !isTTY
+  
+  return !isAIAgent
+}
+
 async function init(): Promise<void> {
-  // TODO: Implement initialization logic
-  console.log('create-rolldown - Coming soon!')
+  const args = parseArguments()
+  
+  // Display help if requested
+  if (args.help) {
+    displayHelp()
+    return
+  }
+  
+  // Detect interactive mode
+  const interactive = shouldUseInteractiveMode(args)
+  
+  // Get target directory from arguments or use default
+  const argTargetDir = formatTargetDir(args._[0])
+  
+  // TODO: Implement rest of initialization logic
+  console.log('create-rolldown')
+  console.log('Arguments:', args)
+  console.log('Interactive mode:', interactive)
+  console.log('Target directory:', argTargetDir || 'rolldown-project')
 }
 
 init().catch((error) => {
