@@ -1,6 +1,14 @@
-# Rolldown + React + TypeScript
+# Rolldown React Starter
 
-This template provides a minimal setup to get React working with Rolldown and TypeScript.
+A starter template for creating a React component library with Rolldown.
+
+## Features
+
+- ⚡️ Fast bundling with [Rolldown](https://rolldown.rs)
+- ⚛️ React 19 support
+- 🎮 Playground for development with Vite
+- 📦 Ready for publishing to npm
+- 🔧 TypeScript support
 
 ## Development
 
@@ -10,20 +18,54 @@ Install dependencies:
 npm install
 ```
 
-Run the development server:
+Run the playground for development:
 
 ```bash
-npm run dev
+npm run play
 ```
 
-Build for production:
+Build the library:
 
 ```bash
 npm run build
 ```
 
-Type check:
+Watch mode for library development:
+
+```bash
+npm run dev
+```
+
+Type checking:
 
 ```bash
 npm run typecheck
+```
+
+## Project Structure
+
+```
+├── src/              # Component library source code
+│   ├── index.ts      # Main entry point
+│   └── MyButton.tsx  # Example component
+├── playground/       # Development playground
+│   ├── src/
+│   │   ├── App.tsx   # Playground app
+│   │   ├── index.tsx # Playground entry
+│   │   └── style.css # Playground styles
+│   └── index.html
+├── dist/             # Build output
+└── rolldown.config.js
+```
+
+## Usage
+
+After building, you can import components from your library:
+
+```tsx
+import { MyButton } from 'your-library-name';
+
+function App() {
+  return <MyButton type="primary" />;
+}
 ```
