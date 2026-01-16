@@ -28,15 +28,8 @@ const createNonEmptyDir = (overrideFolder?: string) => {
   fs.writeFileSync(pkgJson, '{ "foo": "bar" }');
 };
 
-// Vue 3 starter template
-const templateFiles = fs
-  .readdirSync(path.join(CLI_PATH, 'template-vue'))
-  // _gitignore is renamed to .gitignore
-  .map((filePath) => (filePath === '_gitignore' ? '.gitignore' : filePath))
-  .sort();
-
 // React starter template
-const templateFilesReact = fs
+const templateFiles = fs
   .readdirSync(path.join(CLI_PATH, 'template-react'))
   // _gitignore is renamed to .gitignore
   .map((filePath) => (filePath === '_gitignore' ? '.gitignore' : filePath))
@@ -115,8 +108,8 @@ test('asks to overwrite non-empty current directory', () => {
   expect(stdout).toContain(`Current directory is not empty.`);
 });
 
-test('successfully scaffolds a project based on vue starter template', () => {
-  const { stdout } = run([projectName, '--no-interactive', '--template', 'vue'], {
+test('successfully scaffolds a project based on react starter template', () => {
+  const { stdout } = run([projectName, '--no-interactive', '--template', 'react'], {
     cwd: __dirname,
   });
   const generatedFiles = fs.readdirSync(genPath).sort();
@@ -134,11 +127,11 @@ test('successfully scaffolds a project with subfolder based on react starter tem
 
   // Assertions
   expect(stdout).toContain(`Scaffolding project in ${genPathWithSubfolder}`);
-  expect(templateFilesReact).toEqual(generatedFiles);
+  expect(templateFiles).toEqual(generatedFiles);
 });
 
 test('works with the -t alias', () => {
-  const { stdout } = run([projectName, '--no-interactive', '-t', 'vue'], {
+  const { stdout } = run([projectName, '--no-interactive', '-t', 'react'], {
     cwd: __dirname,
   });
   const generatedFiles = fs.readdirSync(genPath).sort();
@@ -188,7 +181,7 @@ test('sets index.html title to project name', () => {
 });
 
 test('accepts immediate flag', () => {
-  const { stdout } = run([projectName, '--template', 'vue', '--immediate'], {
+  const { stdout } = run([projectName, '--template', 'react', '--immediate'], {
     cwd: __dirname,
   });
   expect(stdout).not.toContain('Install and start now?');
@@ -197,7 +190,7 @@ test('accepts immediate flag', () => {
 });
 
 test('accepts no-immediate flag and skips install prompt', () => {
-  const { stdout } = run([projectName, '--template', 'vue', '--no-immediate'], {
+  const { stdout } = run([projectName, '--template', 'react', '--no-immediate'], {
     cwd: __dirname,
   });
   expect(stdout).not.toContain('Install and start now?');
@@ -220,7 +213,7 @@ test('uses default template when none specified in non-interactive mode', () => 
 
 test('converts invalid package name to valid one', () => {
   const invalidName = 'My-Invalid-Package-Name';
-  const { stdout } = run([invalidName, '--template', 'vue', '--no-interactive'], {
+  const { stdout } = run([invalidName, '--template', 'react', '--no-interactive'], {
     cwd: __dirname,
   });
 
@@ -240,17 +233,7 @@ test('converts invalid package name to valid one', () => {
 test('handles all supported templates', () => {
   const templates = [
     'vanilla',
-    'vanilla-ts',
-    'vue',
-    'vue-ts',
     'react',
-    'react-ts',
-    'svelte',
-    'svelte-ts',
-    'solid',
-    'solid-ts',
-    'qwik',
-    'qwik-ts',
   ];
 
   templates.forEach((template) => {

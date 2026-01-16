@@ -1,15 +1,11 @@
 import { defineConfig } from 'rolldown';
-import babel from '@rolldown/plugin-babel';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  input: 'src/main.jsx',
+  input: 'src/main.tsx',
   output: {
     dir: 'dist',
     format: 'esm',
   },
-  plugins: [
-    babel({
-      presets: ['@babel/preset-react'],
-    }),
-  ],
+  plugins: [react()],
 });
