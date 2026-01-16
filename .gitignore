@@ -5,3 +5,15 @@ dist
 coverage
 .vscode
 .idea
+*.tsbuildinfo
+.turbo
+.cache
+temp
+tmp
+*.tmp
+*.swp
+*.swo
+*~
+.env
+.env.local
+.env.*.local

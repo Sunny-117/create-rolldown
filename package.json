@@ -2,15 +2,33 @@
   "name": "create-rolldown",
   "version": "0.1.0",
   "description": "Scaffolding tool for Rolldown projects",
+  "keywords": [
+    "rolldown",
+    "scaffolding",
+    "template",
+    "cli",
+    "create-app",
+    "bundler"
+  ],
+  "homepage": "https://github.com/sunny-117/create-rolldown",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunny-117/create-rolldown.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sunny-117/create-rolldown/issues"
+  },
   "license": "MIT",
-  "author": "Rolldown Team",
+  "author": "Sunny-117",
   "bin": {
     "create-rolldown": "index.js"
   },
   "files": [
     "dist",
     "index.js",
-    "template-*"
+    "template-*",
+    "LICENSE",
+    "README.md"
   ],
   "type": "module",
   "scripts": {
@@ -22,7 +40,8 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "prepublishOnly": "pnpm build && pnpm test"
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",

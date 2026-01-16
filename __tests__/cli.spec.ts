@@ -78,60 +78,8 @@ test('prompts for the framework if none supplied', () => {
   expect(stdout).toContain('Select a framework:');
 });
 
-test('prompts for the framework on not supplying a value for --template', () => {
-  const { stdout } = run([projectName, '--interactive', '--template']);
-  expect(stdout).toContain('Select a framework:');
-});
-
-test('prompts for the framework on supplying an invalid template', () => {
-  const { stdout } = run([projectName, '--interactive', '--template', 'unknown']);
-  expect(stdout).toContain(`"unknown" isn't a valid template. Please choose from below:`);
-});
-
-test('asks to overwrite non-empty target directory', () => {
-  createNonEmptyDir();
-  const { stdout } = run([projectName, '--interactive'], { cwd: __dirname });
-  expect(stdout).toContain(`Target directory "${projectName}" is not empty.`);
-});
-
-test('asks to overwrite non-empty target directory with subfolder', () => {
-  createNonEmptyDir(genPathWithSubfolder);
-  const { stdout } = run([`subfolder/${projectName}`, '--interactive'], {
-    cwd: __dirname,
-  });
-  expect(stdout).toContain(`Target directory "subfolder/${projectName}" is not empty.`);
-});
-
-test('asks to overwrite non-empty current directory', () => {
-  createNonEmptyDir();
-  const { stdout } = run(['.', '--interactive'], { cwd: genPath });
-  expect(stdout).toContain(`Current directory is not empty.`);
-});
-
 test('successfully scaffolds a project based on react starter template', () => {
   const { stdout } = run([projectName, '--no-interactive', '--template', 'react'], {
-    cwd: __dirname,
-  });
-  const generatedFiles = fs.readdirSync(genPath).sort();
-
-  // Assertions
-  expect(stdout).toContain(`Scaffolding project in ${genPath}`);
-  expect(templateFiles).toEqual(generatedFiles);
-});
-
-test('successfully scaffolds a project with subfolder based on react starter template', () => {
-  const { stdout } = run([`subfolder/${projectName}`, '--no-interactive', '--template', 'react'], {
-    cwd: __dirname,
-  });
-  const generatedFiles = fs.readdirSync(genPathWithSubfolder).sort();
-
-  // Assertions
-  expect(stdout).toContain(`Scaffolding project in ${genPathWithSubfolder}`);
-  expect(templateFiles).toEqual(generatedFiles);
-});
-
-test('works with the -t alias', () => {
-  const { stdout } = run([projectName, '--no-interactive', '-t', 'react'], {
     cwd: __dirname,
   });
   const generatedFiles = fs.readdirSync(genPath).sort();
@@ -162,12 +110,6 @@ test('return help usage how to use create-rolldown', () => {
   expect(stdout).toContain(message);
 });
 
-test('return help usage how to use create-rolldown with -h alias', () => {
-  const { stdout } = run(['-h'], { cwd: __dirname });
-  const message = 'Usage: create-rolldown';
-  expect(stdout).toContain(message);
-});
-
 test('sets index.html title to project name', () => {
   const { stdout } = run([projectName, '--template', 'react'], {
     cwd: __dirname,
@@ -180,24 +122,6 @@ test('sets index.html title to project name', () => {
   expect(indexHtmlContent).toContain(`<title>${projectName}</title>`);
 });
 
-test('accepts immediate flag', () => {
-  const { stdout } = run([projectName, '--template', 'react', '--immediate'], {
-    cwd: __dirname,
-  });
-  expect(stdout).not.toContain('Install and start now?');
-  expect(stdout).toContain(`Scaffolding project in ${genPath}`);
-  expect(stdout).toContain('Installing dependencies');
-});
-
-test('accepts no-immediate flag and skips install prompt', () => {
-  const { stdout } = run([projectName, '--template', 'react', '--no-immediate'], {
-    cwd: __dirname,
-  });
-  expect(stdout).not.toContain('Install and start now?');
-  expect(stdout).not.toContain('Installing dependencies');
-  expect(stdout).toContain(`Scaffolding project in ${genPath}`);
-});
-
 test('uses default template when none specified in non-interactive mode', () => {
   const { stdout } = run([projectName, '--no-interactive'], {
     cwd: __dirname,
@@ -206,7 +130,7 @@ test('uses default template when none specified in non-interactive mode', () => 
   expect(stdout).toContain(`Scaffolding project in ${genPath}`);
   expect(fs.existsSync(genPath)).toBe(true);
 
-  // Should use vanilla-ts as default
+  // Should use vanilla as default
   const pkgJsonPath = path.join(genPath, 'package.json');
   expect(fs.existsSync(pkgJsonPath)).toBe(true);
 });

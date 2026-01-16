@@ -6,6 +6,7 @@ import type { Framework } from './types';
 
 /**
  * Supported frameworks with their variants
+ * Note: Only TypeScript templates are supported (vanilla and react)
  */
 export const FRAMEWORKS: Framework[] = [
   {
@@ -14,31 +15,9 @@ export const FRAMEWORKS: Framework[] = [
     color: pc.yellow,
     variants: [
       {
-        name: 'vanilla-ts',
-        display: 'TypeScript',
-        color: pc.blue,
-      },
-      {
         name: 'vanilla',
-        display: 'JavaScript',
-        color: pc.yellow,
-      },
-    ],
-  },
-  {
-    name: 'vue',
-    display: 'Vue',
-    color: pc.green,
-    variants: [
-      {
-        name: 'vue-ts',
         display: 'TypeScript',
         color: pc.blue,
-      },
-      {
-        name: 'vue',
-        display: 'JavaScript',
-        color: pc.yellow,
       },
     ],
   },
@@ -48,65 +27,9 @@ export const FRAMEWORKS: Framework[] = [
     color: pc.cyan,
     variants: [
       {
-        name: 'react-ts',
-        display: 'TypeScript',
-        color: pc.blue,
-      },
-      {
         name: 'react',
-        display: 'JavaScript',
-        color: pc.yellow,
-      },
-    ],
-  },
-  {
-    name: 'svelte',
-    display: 'Svelte',
-    color: pc.red,
-    variants: [
-      {
-        name: 'svelte-ts',
         display: 'TypeScript',
         color: pc.blue,
-      },
-      {
-        name: 'svelte',
-        display: 'JavaScript',
-        color: pc.yellow,
-      },
-    ],
-  },
-  {
-    name: 'solid',
-    display: 'Solid',
-    color: pc.blue,
-    variants: [
-      {
-        name: 'solid-ts',
-        display: 'TypeScript',
-        color: pc.blue,
-      },
-      {
-        name: 'solid',
-        display: 'JavaScript',
-        color: pc.yellow,
-      },
-    ],
-  },
-  {
-    name: 'qwik',
-    display: 'Qwik',
-    color: pc.magenta,
-    variants: [
-      {
-        name: 'qwik-ts',
-        display: 'TypeScript',
-        color: pc.blue,
-      },
-      {
-        name: 'qwik',
-        display: 'JavaScript',
-        color: pc.yellow,
       },
     ],
   },

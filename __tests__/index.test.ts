@@ -612,7 +612,8 @@ describe('Property Tests - CLI Argument Parsing', () => {
 describe('Unit Tests - Framework Data Structures', () => {
   it('verifies all required frameworks are defined', () => {
     // Requirements: 3.1
-    const requiredFrameworks = ['vanilla', 'vue', 'react', 'svelte', 'solid', 'qwik'];
+    // Note: Currently only vanilla and react templates are implemented
+    const requiredFrameworks = ['vanilla', 'react'];
     const definedFrameworks = FRAMEWORKS.map((f) => f.name);
 
     for (const required of requiredFrameworks) {
@@ -1463,7 +1464,7 @@ describe('Property Tests - Non-Interactive Mode', () => {
           }
 
           // Test default template logic
-          const defaultTemplate = 'vanilla-ts';
+          const defaultTemplate = 'vanilla';
           let finalTemplate = args.template;
 
           if (!finalTemplate) {
@@ -1514,7 +1515,7 @@ describe('Property Tests - Non-Interactive Mode', () => {
 
     // Test default values
     const defaultProjectName = 'rolldown-project';
-    const defaultTemplate = 'vanilla-ts';
+    const defaultTemplate = 'vanilla';
 
     const targetDir = formatTargetDir(args._[0]) || defaultProjectName;
     expect(targetDir).toBe(defaultProjectName);
@@ -1586,14 +1587,14 @@ describe('Property Tests - Non-Interactive Mode', () => {
     const args = parseArguments([
       'my-project',
       '--template',
-      'react-ts',
+      'react',
       '--overwrite',
       '--no-interactive',
     ]);
 
     expect(args.interactive).toBe(false);
     expect(args._).toEqual(['my-project']);
-    expect(args.template).toBe('react-ts');
+    expect(args.template).toBe('react');
     expect(args.overwrite).toBe(true);
 
     // Verify mode detection
@@ -1605,7 +1606,7 @@ describe('Property Tests - Non-Interactive Mode', () => {
     expect(targetDir).toBe('my-project');
 
     const template = args.template;
-    expect(template).toBe('react-ts');
+    expect(template).toBe('react');
     expect(TEMPLATES).toContain(template);
 
     const packageName = toValidPackageName(targetDir);
@@ -1685,7 +1686,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
     expect(isValidPackageName(packageName)).toBe(true);
 
     // Test template validation
-    expect(TEMPLATES).toContain('vanilla-ts');
+    expect(TEMPLATES).toContain('vanilla');
 
     // Test project creation
     const projectRoot = path.join(tempDir, 'my-project');
@@ -1717,7 +1718,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
 
     fs.writeFileSync(
       path.join(templateDir, 'package.json'),
-      JSON.stringify({ name: 'template-react-ts', version: '1.0.0' }, null, 2)
+      JSON.stringify({ name: 'template-react', version: '1.0.0' }, null, 2)
     );
     fs.writeFileSync(
       path.join(templateDir, 'index.html'),
@@ -1731,7 +1732,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
     const reactFramework = FRAMEWORKS.find((f) => f.name === 'react')!;
     vi.mocked(prompts.select)
       .mockResolvedValueOnce(reactFramework) // framework selection
-      .mockResolvedValueOnce('react-ts'); // variant selection
+      .mockResolvedValueOnce('react'); // variant selection
 
     vi.mocked(prompts.confirm).mockResolvedValueOnce(false); // immediate install
 
@@ -1762,7 +1763,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
     expect(framework.name).toBe('react');
 
     const variant = await promptVariant(framework.variants);
-    expect(variant).toBe('react-ts');
+    expect(variant).toBe('react');
 
     const shouldInstall = await promptImmediate('npm');
     expect(shouldInstall).toBe(false);
@@ -1800,7 +1801,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
       'existing-project',
       '--overwrite',
       '--template',
-      'vanilla-ts',
+      'vanilla',
       '--no-interactive',
     ]);
     expect(args.overwrite).toBe(true);
@@ -1814,7 +1815,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
     expect(fs.existsSync(path.join(projectRoot, 'existing-file.txt'))).toBe(false);
 
     // Now create template
-    const templateDir = path.join(tempDir, 'template-vanilla-ts');
+    const templateDir = path.join(tempDir, 'template-vanilla');
     fs.mkdirSync(templateDir, { recursive: true });
     fs.writeFileSync(
       path.join(templateDir, 'package.json'),
@@ -1877,8 +1878,8 @@ describe('Integration Tests - Main Initialization Flow', () => {
     expect(targetDir).toBe(defaultProjectName);
 
     // Test default template
-    const template = args.template || 'vanilla-ts';
-    expect(template).toBe('vanilla-ts');
+    const template = args.template || 'vanilla';
+    expect(template).toBe('vanilla');
     expect(TEMPLATES).toContain(template);
 
     // Test package name conversion
@@ -1923,7 +1924,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
     // This test verifies template validation
 
     // Test valid template
-    const validTemplate = 'react-ts';
+    const validTemplate = 'react';
     expect(TEMPLATES).toContain(validTemplate);
 
     // Test invalid template

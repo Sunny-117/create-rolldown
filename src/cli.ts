@@ -150,7 +150,7 @@ async function init(): Promise<void> {
       template = await promptVariant(framework.variants);
     } else if (!template) {
       // Non-interactive mode without template - use default
-      template = 'vanilla-ts';
+      template = 'vanilla';
     }
 
     // Validate template
@@ -163,9 +163,9 @@ async function init(): Promise<void> {
         template = await promptVariant(framework.variants);
       } else {
         console.log(
-          pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla-ts".\n`)
+          pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla".\n`)
         );
-        template = 'vanilla-ts';
+        template = 'vanilla';
       }
     }
 
