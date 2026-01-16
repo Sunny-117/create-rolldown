@@ -14,7 +14,11 @@ import {
   getRunCommand,
   parseArguments,
   shouldUseInteractiveMode,
+  FRAMEWORKS,
+  TEMPLATES,
+  renameFiles,
   type CLIArguments,
+  type Framework,
 } from './index'
 
 describe('Property Tests - String Validation and Formatting', () => {
@@ -275,7 +279,7 @@ describe('Property Tests - CLI Argument Parsing', () => {
     fc.assert(
       fc.property(
         fc.array(fc.string().filter((s) => !s.startsWith('-'))), // positional arguments (exclude flags)
-        fc.option(fc.string().filter((s) => s.length > 0), { nil: undefined }), // template (non-empty)
+        fc.option(fc.string().filter((s) => s.length > 0 && !s.startsWith('-')), { nil: undefined }), // template (non-empty, not starting with -)
         fc.boolean(), // help
         fc.boolean(), // overwrite
         fc.boolean(), // immediate
@@ -375,5 +379,115 @@ describe('Property Tests - CLI Argument Parsing', () => {
     
     const args2: CLIArguments = { _: [], interactive: false }
     expect(shouldUseInteractiveMode(args2)).toBe(false)
+  })
+})
+
+describe('Unit Tests - Framework Data Structures', () => {
+  it('verifies all required frameworks are defined', () => {
+    // Requirements: 3.1
+    const requiredFrameworks = ['vanilla', 'vue', 'react', 'svelte', 'solid', 'qwik']
+    const definedFrameworks = FRAMEWORKS.map((f) => f.name)
+    
+    for (const required of requiredFrameworks) {
+      expect(definedFrameworks).toContain(required)
+    }
+    
+    expect(FRAMEWORKS.length).toBe(requiredFrameworks.length)
+  })
+  
+  it('verifies TypeScript variant symmetry', () => {
+    // Requirements: 3.2
+    // For any framework that supports TypeScript, there must be a corresponding JavaScript variant
+    for (const framework of FRAMEWORKS) {
+      const variantNames = framework.variants.map((v) => v.name)
+      const hasTypeScript = variantNames.some((name) => name.endsWith('-ts'))
+      const hasJavaScript = variantNames.some((name) => !name.endsWith('-ts'))
+      
+      if (hasTypeScript) {
+        // If there's a TypeScript variant, there must be a JavaScript variant
+        expect(hasJavaScript).toBe(true)
+        
+        // Verify that for each TypeScript variant, there's a corresponding JavaScript variant
+        const tsVariants = variantNames.filter((name) => name.endsWith('-ts'))
+        for (const tsVariant of tsVariants) {
+          const jsVariant = tsVariant.replace('-ts', '')
+          expect(variantNames).toContain(jsVariant)
+        }
+      }
+    }
+  })
+  
+  it('verifies all frameworks have at least one variant', () => {
+    for (const framework of FRAMEWORKS) {
+      expect(framework.variants.length).toBeGreaterThan(0)
+    }
+  })
+  
+  it('verifies all framework properties are defined', () => {
+    for (const framework of FRAMEWORKS) {
+      expect(framework.name).toBeDefined()
+      expect(framework.display).toBeDefined()
+      expect(framework.color).toBeDefined()
+      expect(typeof framework.color).toBe('function')
+      expect(framework.variants).toBeDefined()
+      expect(Array.isArray(framework.variants)).toBe(true)
+    }
+  })
+  
+  it('verifies all variant properties are defined', () => {
+    for (const framework of FRAMEWORKS) {
+      for (const variant of framework.variants) {
+        expect(variant.name).toBeDefined()
+        expect(variant.display).toBeDefined()
+        expect(variant.color).toBeDefined()
+        expect(typeof variant.color).toBe('function')
+      }
+    }
+  })
+  
+  it('verifies TEMPLATES contains all variant names', () => {
+    const allVariantNames: string[] = []
+    for (const framework of FRAMEWORKS) {
+      for (const variant of framework.variants) {
+        allVariantNames.push(variant.name)
+      }
+    }
+    
+    expect(TEMPLATES.length).toBe(allVariantNames.length)
+    
+    for (const variantName of allVariantNames) {
+      expect(TEMPLATES).toContain(variantName)
+    }
+  })
+  
+  it('verifies renameFiles mapping is defined', () => {
+    expect(renameFiles).toBeDefined()
+    expect(typeof renameFiles).toBe('object')
+    expect(renameFiles._gitignore).toBe('.gitignore')
+  })
+  
+  it('verifies color functions work correctly', () => {
+    for (const framework of FRAMEWORKS) {
+      const coloredText = framework.color('test')
+      expect(typeof coloredText).toBe('string')
+      expect(coloredText.length).toBeGreaterThan(0)
+      
+      for (const variant of framework.variants) {
+        const variantColoredText = variant.color('test')
+        expect(typeof variantColoredText).toBe('string')
+        expect(variantColoredText.length).toBeGreaterThan(0)
+      }
+    }
+  })
+  
+  it('verifies variant names match expected pattern', () => {
+    for (const framework of FRAMEWORKS) {
+      for (const variant of framework.variants) {
+        // Variant name should either be the framework name or framework name + '-ts'
+        const isJavaScript = variant.name === framework.name
+        const isTypeScript = variant.name === `${framework.name}-ts`
+        expect(isJavaScript || isTypeScript).toBe(true)
+      }
+    }
   })
 })

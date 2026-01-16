@@ -4,6 +4,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import mri from 'mri'
+import pc from 'picocolors'
 
 /**
  * CLI Arguments interface
@@ -15,6 +16,153 @@ export interface CLIArguments {
   overwrite?: boolean            // Overwrite existing files (--overwrite)
   immediate?: boolean            // Install and start immediately (-i, --immediate)
   interactive?: boolean          // Force interactive/non-interactive mode (--interactive, --no-interactive)
+}
+
+/**
+ * Color function type for framework display
+ */
+export type ColorFunc = (str: string | number) => string
+
+/**
+ * Framework variant interface
+ */
+export interface FrameworkVariant {
+  name: string                   // Variant identifier (template name)
+  display: string                // Display name
+  color: ColorFunc               // Color function
+  customCommand?: string         // Custom creation command (optional)
+}
+
+/**
+ * Framework interface
+ */
+export interface Framework {
+  name: string                   // Framework identifier
+  display: string                // Display name
+  color: ColorFunc               // Color function
+  variants: FrameworkVariant[]   // Variant list
+}
+
+/**
+ * Supported frameworks with their variants
+ */
+export const FRAMEWORKS: Framework[] = [
+  {
+    name: 'vanilla',
+    display: 'Vanilla',
+    color: pc.yellow,
+    variants: [
+      {
+        name: 'vanilla-ts',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+      {
+        name: 'vanilla',
+        display: 'JavaScript',
+        color: pc.yellow,
+      },
+    ],
+  },
+  {
+    name: 'vue',
+    display: 'Vue',
+    color: pc.green,
+    variants: [
+      {
+        name: 'vue-ts',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+      {
+        name: 'vue',
+        display: 'JavaScript',
+        color: pc.yellow,
+      },
+    ],
+  },
+  {
+    name: 'react',
+    display: 'React',
+    color: pc.cyan,
+    variants: [
+      {
+        name: 'react-ts',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+      {
+        name: 'react',
+        display: 'JavaScript',
+        color: pc.yellow,
+      },
+    ],
+  },
+  {
+    name: 'svelte',
+    display: 'Svelte',
+    color: pc.red,
+    variants: [
+      {
+        name: 'svelte-ts',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+      {
+        name: 'svelte',
+        display: 'JavaScript',
+        color: pc.yellow,
+      },
+    ],
+  },
+  {
+    name: 'solid',
+    display: 'Solid',
+    color: pc.blue,
+    variants: [
+      {
+        name: 'solid-ts',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+      {
+        name: 'solid',
+        display: 'JavaScript',
+        color: pc.yellow,
+      },
+    ],
+  },
+  {
+    name: 'qwik',
+    display: 'Qwik',
+    color: pc.magenta,
+    variants: [
+      {
+        name: 'qwik-ts',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+      {
+        name: 'qwik',
+        display: 'JavaScript',
+        color: pc.yellow,
+      },
+    ],
+  },
+]
+
+/**
+ * All available template names (flat list)
+ */
+export const TEMPLATES: string[] = FRAMEWORKS.map((f) =>
+  f.variants.map((v) => v.name)
+).flat()
+
+/**
+ * File rename mappings for special files
+ */
+export const renameFiles: Record<string, string | undefined> = {
+  _gitignore: '.gitignore',
 }
 
 /**
