@@ -218,16 +218,24 @@ export function isEmpty(path: string): boolean {
 /**
  * Empty a directory but preserve .git folder
  * @param dir - The directory to empty
+ * @throws Error if directory emptying fails
  */
 export function emptyDir(dir: string): void {
   if (!fs.existsSync(dir)) {
     return
   }
-  for (const file of fs.readdirSync(dir)) {
-    if (file === '.git') {
-      continue
+  try {
+    for (const file of fs.readdirSync(dir)) {
+      if (file === '.git') {
+        continue
+      }
+      fs.rmSync(path.resolve(dir, file), { recursive: true, force: true })
     }
-    fs.rmSync(path.resolve(dir, file), { recursive: true, force: true })
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to empty directory ${dir}: ${error.message}`)
+    }
+    throw error
   }
 }
 
@@ -235,13 +243,21 @@ export function emptyDir(dir: string): void {
  * Copy a file or directory
  * @param src - Source path
  * @param dest - Destination path
+ * @throws Error if copy operation fails
  */
 export function copy(src: string, dest: string): void {
-  const stat = fs.statSync(src)
-  if (stat.isDirectory()) {
-    copyDir(src, dest)
-  } else {
-    fs.copyFileSync(src, dest)
+  try {
+    const stat = fs.statSync(src)
+    if (stat.isDirectory()) {
+      copyDir(src, dest)
+    } else {
+      fs.copyFileSync(src, dest)
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to copy from ${src} to ${dest}: ${error.message}`)
+    }
+    throw error
   }
 }
 
@@ -249,13 +265,21 @@ export function copy(src: string, dest: string): void {
  * Recursively copy a directory
  * @param srcDir - Source directory
  * @param destDir - Destination directory
+ * @throws Error if directory copy fails
  */
 export function copyDir(srcDir: string, destDir: string): void {
-  fs.mkdirSync(destDir, { recursive: true })
-  for (const file of fs.readdirSync(srcDir)) {
-    const srcFile = path.resolve(srcDir, file)
-    const destFile = path.resolve(destDir, file)
-    copy(srcFile, destFile)
+  try {
+    fs.mkdirSync(destDir, { recursive: true })
+    for (const file of fs.readdirSync(srcDir)) {
+      const srcFile = path.resolve(srcDir, file)
+      const destFile = path.resolve(destDir, file)
+      copy(srcFile, destFile)
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to copy directory from ${srcDir} to ${destDir}: ${error.message}`)
+    }
+    throw error
   }
 }
 
@@ -290,6 +314,7 @@ export function editFile(file: string, callback: (content: string) => string): v
  * @param root - Target root directory
  * @param projectName - Project name for replacements
  * @param packageName - Package name for package.json
+ * @throws Error if template copy fails or template directory doesn't exist
  */
 export function copyTemplate(
   templateDir: string,
@@ -297,48 +322,60 @@ export function copyTemplate(
   projectName: string,
   packageName: string
 ): void {
-  // Create target directory if it doesn't exist
-  if (!fs.existsSync(root)) {
-    fs.mkdirSync(root, { recursive: true })
+  // Validate template directory exists
+  if (!fs.existsSync(templateDir)) {
+    throw new Error(`Template directory not found: ${templateDir}`)
   }
   
-  const files = fs.readdirSync(templateDir)
-  
-  for (const file of files) {
-    const srcFile = path.join(templateDir, file)
-    const stat = fs.statSync(srcFile)
-    
-    if (stat.isDirectory()) {
-      // Recursively copy directories
-      const destDir = path.join(root, file)
-      copyDir(srcFile, destDir)
-    } else {
-      // Handle file renaming for special files
-      const destFileName = renameFiles[file] ?? file
-      const destFile = path.join(root, destFileName)
-      
-      // Copy the file
-      fs.copyFileSync(srcFile, destFile)
+  try {
+    // Create target directory if it doesn't exist
+    if (!fs.existsSync(root)) {
+      fs.mkdirSync(root, { recursive: true })
     }
-  }
-  
-  // Update package.json with the correct package name
-  const pkgJsonPath = path.join(root, 'package.json')
-  if (fs.existsSync(pkgJsonPath)) {
-    editFile(pkgJsonPath, (content) => {
-      const pkg = JSON.parse(content)
-      pkg.name = packageName
-      return JSON.stringify(pkg, null, 2) + '\n'
-    })
-  }
-  
-  // Update index.html with the correct project name
-  const indexHtmlPath = path.join(root, 'index.html')
-  if (fs.existsSync(indexHtmlPath)) {
-    editFile(indexHtmlPath, (content) => {
-      // Use a replacement function to avoid issues with special regex characters
-      return content.replace(/<title>.*?<\/title>/, () => `<title>${projectName}</title>`)
-    })
+    
+    const files = fs.readdirSync(templateDir)
+    
+    for (const file of files) {
+      const srcFile = path.join(templateDir, file)
+      const stat = fs.statSync(srcFile)
+      
+      if (stat.isDirectory()) {
+        // Recursively copy directories
+        const destDir = path.join(root, file)
+        copyDir(srcFile, destDir)
+      } else {
+        // Handle file renaming for special files
+        const destFileName = renameFiles[file] ?? file
+        const destFile = path.join(root, destFileName)
+        
+        // Copy the file
+        fs.copyFileSync(srcFile, destFile)
+      }
+    }
+    
+    // Update package.json with the correct package name
+    const pkgJsonPath = path.join(root, 'package.json')
+    if (fs.existsSync(pkgJsonPath)) {
+      editFile(pkgJsonPath, (content) => {
+        const pkg = JSON.parse(content)
+        pkg.name = packageName
+        return JSON.stringify(pkg, null, 2) + '\n'
+      })
+    }
+    
+    // Update index.html with the correct project name
+    const indexHtmlPath = path.join(root, 'index.html')
+    if (fs.existsSync(indexHtmlPath)) {
+      editFile(indexHtmlPath, (content) => {
+        // Use a replacement function to avoid issues with special regex characters
+        return content.replace(/<title>.*?<\/title>/, () => `<title>${projectName}</title>`)
+      })
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to copy template: ${error.message}`)
+    }
+    throw error
   }
 }
 
@@ -647,6 +684,7 @@ export async function promptImmediate(pkgManager: string): Promise<boolean> {
  * Execute a command using cross-spawn
  * @param command - Command array [command, ...args]
  * @param options - Spawn options
+ * @throws Error if command execution fails
  */
 export function run(command: string[], options?: SpawnOptions): void {
   // Skip actual command execution in test environment
@@ -655,17 +693,27 @@ export function run(command: string[], options?: SpawnOptions): void {
   }
   
   const [cmd, ...args] = command
-  const result = spawn.sync(cmd, args, {
-    stdio: 'inherit',
-    ...options,
-  })
   
-  if (result.error) {
-    throw result.error
-  }
-  
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1)
+  try {
+    const result = spawn.sync(cmd, args, {
+      stdio: 'inherit',
+      ...options,
+    })
+    
+    if (result.error) {
+      throw new Error(`Failed to execute command: ${cmd} ${args.join(' ')}\n${result.error.message}`)
+    }
+    
+    if (result.status !== 0) {
+      throw new Error(`Command failed with exit code ${result.status}: ${cmd} ${args.join(' ')}`)
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(pc.red(`\n✗ Command execution failed: ${error.message}`))
+    } else {
+      console.error(pc.red(`\n✗ Command execution failed: ${String(error)}`))
+    }
+    throw error
   }
 }
 
@@ -673,6 +721,7 @@ export function run(command: string[], options?: SpawnOptions): void {
  * Install dependencies in the project directory
  * @param root - Project root directory
  * @param agent - Package manager name
+ * @throws Error if installation fails
  */
 export function install(root: string, agent: string): void {
   const installCmd = getInstallCommand(agent)
@@ -683,13 +732,22 @@ export function install(root: string, agent: string): void {
     return
   }
   
-  run(installCmd, { cwd: root })
+  try {
+    run(installCmd, { cwd: root })
+  } catch (error) {
+    console.error(pc.red(`\n✗ Failed to install dependencies with ${agent}`))
+    if (error instanceof Error) {
+      console.error(pc.red(`Error: ${error.message}`))
+    }
+    throw error
+  }
 }
 
 /**
  * Start the development server
  * @param root - Project root directory
  * @param agent - Package manager name
+ * @throws Error if server start fails
  */
 export function start(root: string, agent: string): void {
   const runCmd = getRunCommand(agent, 'dev')
@@ -700,7 +758,15 @@ export function start(root: string, agent: string): void {
     return
   }
   
-  run(runCmd, { cwd: root })
+  try {
+    run(runCmd, { cwd: root })
+  } catch (error) {
+    console.error(pc.red(`\n✗ Failed to start dev server with ${agent}`))
+    if (error instanceof Error) {
+      console.error(pc.red(`Error: ${error.message}`))
+    }
+    throw error
+  }
 }
 
 /**
@@ -708,163 +774,210 @@ export function start(root: string, agent: string): void {
  * Orchestrates the entire project creation workflow
  */
 async function init(): Promise<void> {
-  const args = parseArguments()
-  
-  // Display help if requested
-  if (args.help) {
-    displayHelp()
-    return
-  }
-  
-  // Detect interactive mode
-  const interactive = shouldUseInteractiveMode(args)
-  
-  // Detect AI agent environment and provide guidance
-  if (!interactive && !process.stdout.isTTY) {
-    console.log(pc.yellow('\nDetected non-interactive environment (AI agent or CI/CD).'))
-    console.log(pc.yellow('For best results, use: create-rolldown <project-name> --template <template> --no-interactive\n'))
-  }
-  
-  // Get target directory from arguments or use default
-  const defaultProjectName = 'rolldown-project'
-  let targetDir = formatTargetDir(args._[0])
-  
-  // Get project name (interactive or from args)
-  let projectName: string
-  if (interactive && !targetDir) {
-    projectName = await promptProjectName(defaultProjectName)
-    targetDir = formatTargetDir(projectName)
-  } else {
-    projectName = targetDir || defaultProjectName
-    targetDir = projectName
-  }
-  
-  // Resolve to absolute path
-  const root = path.resolve(process.cwd(), targetDir)
-  
-  // Handle directory conflicts
-  if (fs.existsSync(root) && !isEmpty(root)) {
-    if (interactive) {
-      const overwrite = await promptOverwrite(targetDir)
-      
-      if (overwrite === 'no') {
-        console.log(pc.red('\nOperation cancelled'))
-        process.exit(0)
-      } else if (overwrite === 'yes') {
-        console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
-        emptyDir(root)
-      }
-      // If 'ignore', continue without clearing
+  try {
+    const args = parseArguments()
+    
+    // Display help if requested
+    if (args.help) {
+      displayHelp()
+      return
+    }
+    
+    // Detect interactive mode
+    const interactive = shouldUseInteractiveMode(args)
+    
+    // Detect AI agent environment and provide guidance
+    if (!interactive && !process.stdout.isTTY) {
+      console.log(pc.yellow('\nDetected non-interactive environment (AI agent or CI/CD).'))
+      console.log(pc.yellow('For best results, use: create-rolldown <project-name> --template <template> --no-interactive\n'))
+    }
+    
+    // Get target directory from arguments or use default
+    const defaultProjectName = 'rolldown-project'
+    let targetDir = formatTargetDir(args._[0])
+    
+    // Get project name (interactive or from args)
+    let projectName: string
+    if (interactive && !targetDir) {
+      projectName = await promptProjectName(defaultProjectName)
+      targetDir = formatTargetDir(projectName)
     } else {
-      // Non-interactive mode
-      if (args.overwrite) {
-        console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
-        emptyDir(root)
+      projectName = targetDir || defaultProjectName
+      targetDir = projectName
+    }
+    
+    // Resolve to absolute path
+    const root = path.resolve(process.cwd(), targetDir)
+    
+    // Handle directory conflicts
+    if (fs.existsSync(root) && !isEmpty(root)) {
+      if (interactive) {
+        const overwrite = await promptOverwrite(targetDir)
+        
+        if (overwrite === 'no') {
+          console.log(pc.red('\nOperation cancelled'))
+          process.exit(0)
+        } else if (overwrite === 'yes') {
+          console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
+          try {
+            emptyDir(root)
+          } catch (error) {
+            console.error(pc.red(`\n✗ Failed to remove existing files`))
+            if (error instanceof Error) {
+              console.error(pc.red(`Error: ${error.message}`))
+            }
+            process.exit(1)
+          }
+        }
+        // If 'ignore', continue without clearing
       } else {
-        console.log(pc.red(`\nTarget directory "${targetDir}" is not empty.`))
-        console.log(pc.red('Use --overwrite flag to overwrite existing files, or choose a different directory.'))
-        process.exit(1)
+        // Non-interactive mode
+        if (args.overwrite) {
+          console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
+          try {
+            emptyDir(root)
+          } catch (error) {
+            console.error(pc.red(`\n✗ Failed to remove existing files`))
+            if (error instanceof Error) {
+              console.error(pc.red(`Error: ${error.message}`))
+            }
+            process.exit(1)
+          }
+        } else {
+          console.log(pc.red(`\nTarget directory "${targetDir}" is not empty.`))
+          console.log(pc.red('Use --overwrite flag to overwrite existing files, or choose a different directory.'))
+          process.exit(1)
+        }
       }
     }
-  }
-  
-  // Get package name
-  let packageName = toValidPackageName(projectName)
-  if (interactive && !isValidPackageName(projectName)) {
-    packageName = await promptPackageName(packageName)
-  }
-  
-  // Get template
-  let template = args.template
-  
-  if (interactive && !template) {
-    // Prompt for framework
-    const framework = await promptFramework(FRAMEWORKS)
     
-    // Prompt for variant
-    template = await promptVariant(framework.variants)
-  } else if (!template) {
-    // Non-interactive mode without template - use default
-    template = 'vanilla-ts'
-  }
-  
-  // Validate template
-  if (!TEMPLATES.includes(template)) {
-    if (interactive) {
-      console.log(pc.yellow(`\nTemplate "${template}" not found. Please select from available templates:\n`))
+    // Get package name
+    let packageName = toValidPackageName(projectName)
+    if (interactive && !isValidPackageName(projectName)) {
+      packageName = await promptPackageName(packageName)
+    }
+    
+    // Get template
+    let template = args.template
+    
+    if (interactive && !template) {
+      // Prompt for framework
       const framework = await promptFramework(FRAMEWORKS)
+      
+      // Prompt for variant
       template = await promptVariant(framework.variants)
-    } else {
-      console.log(pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla-ts".\n`))
+    } else if (!template) {
+      // Non-interactive mode without template - use default
       template = 'vanilla-ts'
     }
-  }
-  
-  // Detect package manager
-  const pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent)
-  const pkgManager = pkgInfo?.name || 'npm'
-  
-  // Ask about immediate installation (interactive only)
-  let shouldInstall = args.immediate || false
-  if (interactive && !args.immediate) {
-    shouldInstall = await promptImmediate(pkgManager)
-  }
-  
-  // Start scaffolding
-  console.log(pc.cyan(`\nScaffolding project in ${root}...`))
-  
-  // Get template directory
-  const templateDir = path.resolve(
-    path.dirname(new URL(import.meta.url).pathname),
-    '..',
-    `template-${template}`
-  )
-  
-  // Create target directory if it doesn't exist
-  if (!fs.existsSync(root)) {
-    fs.mkdirSync(root, { recursive: true })
-  }
-  
-  // Copy template files
-  copyTemplate(templateDir, root, projectName, packageName)
-  
-  console.log(pc.green('\n✓ Project created successfully!'))
-  
-  // Install dependencies and start server if requested
-  if (shouldInstall) {
+    
+    // Validate template
+    if (!TEMPLATES.includes(template)) {
+      if (interactive) {
+        console.log(pc.yellow(`\nTemplate "${template}" not found. Please select from available templates:\n`))
+        const framework = await promptFramework(FRAMEWORKS)
+        template = await promptVariant(framework.variants)
+      } else {
+        console.log(pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla-ts".\n`))
+        template = 'vanilla-ts'
+      }
+    }
+    
+    // Detect package manager
+    const pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent)
+    const pkgManager = pkgInfo?.name || 'npm'
+    
+    // Ask about immediate installation (interactive only)
+    let shouldInstall = args.immediate || false
+    if (interactive && !args.immediate) {
+      shouldInstall = await promptImmediate(pkgManager)
+    }
+    
+    // Start scaffolding
+    console.log(pc.cyan(`\nScaffolding project in ${root}...`))
+    
+    // Get template directory
+    const templateDir = path.resolve(
+      path.dirname(new URL(import.meta.url).pathname),
+      '..',
+      `template-${template}`
+    )
+    
+    // Create target directory if it doesn't exist
     try {
-      install(root, pkgManager)
-      console.log(pc.green('\n✓ Dependencies installed successfully!'))
-      
-      start(root, pkgManager)
+      if (!fs.existsSync(root)) {
+        fs.mkdirSync(root, { recursive: true })
+      }
     } catch (error) {
-      console.error(pc.red('\n✗ Failed to install dependencies or start server'))
-      console.error(error)
+      console.error(pc.red(`\n✗ Failed to create project directory`))
+      if (error instanceof Error) {
+        console.error(pc.red(`Error: ${error.message}`))
+      }
       process.exit(1)
     }
-  } else {
-    // Display next steps
-    console.log(pc.cyan('\nNext steps:'))
     
-    const cdCommand = path.relative(process.cwd(), root)
-    if (cdCommand) {
-      console.log(pc.cyan(`  cd ${cdCommand}`))
+    // Copy template files
+    try {
+      copyTemplate(templateDir, root, projectName, packageName)
+    } catch (error) {
+      console.error(pc.red(`\n✗ Failed to copy template files`))
+      if (error instanceof Error) {
+        console.error(pc.red(`Error: ${error.message}`))
+      }
+      process.exit(1)
     }
     
-    const installCmd = getInstallCommand(pkgManager).join(' ')
-    console.log(pc.cyan(`  ${installCmd}`))
+    console.log(pc.green('\n✓ Project created successfully!'))
     
-    const runCmd = getRunCommand(pkgManager, 'dev').join(' ')
-    console.log(pc.cyan(`  ${runCmd}`))
-    
-    console.log()
+    // Install dependencies and start server if requested
+    if (shouldInstall) {
+      try {
+        install(root, pkgManager)
+        console.log(pc.green('\n✓ Dependencies installed successfully!'))
+        
+        start(root, pkgManager)
+      } catch (error) {
+        console.error(pc.red('\n✗ Failed to install dependencies or start server'))
+        if (error instanceof Error) {
+          console.error(pc.red(`Error: ${error.message}`))
+        }
+        process.exit(1)
+      }
+    } else {
+      // Display next steps
+      console.log(pc.cyan('\nNext steps:'))
+      
+      const cdCommand = path.relative(process.cwd(), root)
+      if (cdCommand) {
+        console.log(pc.cyan(`  cd ${cdCommand}`))
+      }
+      
+      const installCmd = getInstallCommand(pkgManager).join(' ')
+      console.log(pc.cyan(`  ${installCmd}`))
+      
+      const runCmd = getRunCommand(pkgManager, 'dev').join(' ')
+      console.log(pc.cyan(`  ${runCmd}`))
+      
+      console.log()
+    }
+  } catch (error) {
+    // Handle any unexpected errors
+    if (error instanceof Error) {
+      console.error(pc.red(`\n✗ An unexpected error occurred: ${error.message}`))
+    } else {
+      console.error(pc.red(`\n✗ An unexpected error occurred: ${String(error)}`))
+    }
+    process.exit(1)
   }
 }
 
 // Only run init if not in test environment
 if (!process.env._ROLLDOWN_TEST_CLI && !process.env.VITEST) {
   init().catch((error) => {
-    console.error(error)
+    // Error handling is already done in init(), but catch any unhandled errors
+    if (error instanceof Error && error.message !== 'process.exit called with code 0') {
+      console.error(pc.red(`\n✗ Fatal error: ${error.message}`))
+    }
     process.exit(1)
   })
 }

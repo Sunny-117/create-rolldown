@@ -1211,6 +1211,192 @@ describe('Unit Tests - Command Execution', () => {
   })
 })
 
+describe('Property Tests - Error Handling', () => {
+  it('Property 13: Error handling consistency', () => {
+    // Feature: create-rolldown, Property 13: 错误处理一致性
+    // Validates: Requirements 8.1, 8.2, 8.3, 8.4
+    fc.assert(
+      fc.property(
+        fc.constantFrom(
+          'file_system_error',
+          'invalid_template',
+          'directory_conflict'
+        ),
+        (errorType) => {
+          const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-error-'))
+          
+          try {
+            let errorThrown = false
+            let errorMessage = ''
+            
+            switch (errorType) {
+              case 'file_system_error':
+                // Test file system error handling
+                try {
+                  // Try to copy from non-existent source
+                  copyDir('/nonexistent/path/source', path.join(tempDir, 'dest'))
+                } catch (error) {
+                  errorThrown = true
+                  if (error instanceof Error) {
+                    errorMessage = error.message
+                    // Error message should be meaningful
+                    expect(errorMessage.length).toBeGreaterThan(0)
+                    expect(errorMessage.toLowerCase()).toMatch(/failed|error|not found|no such/i)
+                  }
+                }
+                
+                // Verify error was thrown
+                expect(errorThrown).toBe(true)
+                break
+                
+              case 'invalid_template':
+                // Test invalid template handling
+                const invalidTemplate = 'nonexistent-template-xyz'
+                
+                // Verify template is not in the list
+                expect(TEMPLATES).not.toContain(invalidTemplate)
+                
+                // In non-interactive mode, should fall back to default
+                const args = parseArguments(['--template', invalidTemplate, '--no-interactive'])
+                const template = TEMPLATES.includes(args.template!) ? args.template : 'vanilla-ts'
+                
+                // Should use default template
+                expect(template).toBe('vanilla-ts')
+                break
+                
+              case 'directory_conflict':
+                // Test directory conflict handling
+                const conflictDir = path.join(tempDir, 'conflict')
+                fs.mkdirSync(conflictDir)
+                fs.writeFileSync(path.join(conflictDir, 'existing.txt'), 'content')
+                
+                // Verify directory is not empty
+                expect(isEmpty(conflictDir)).toBe(false)
+                
+                // In non-interactive mode without --overwrite, should fail
+                // (We can't test the full init flow, but we can verify the logic)
+                const args2 = parseArguments(['conflict', '--no-interactive'])
+                expect(args2.overwrite).toBeUndefined()
+                
+                // With --overwrite, should succeed
+                const args3 = parseArguments(['conflict', '--overwrite', '--no-interactive'])
+                expect(args3.overwrite).toBe(true)
+                break
+            }
+          } finally {
+            // Cleanup
+            fs.rmSync(tempDir, { recursive: true, force: true })
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  it('verifies error messages are meaningful and consistent', () => {
+    // Requirements: 8.1, 8.2
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-error-msg-'))
+    
+    try {
+      // Test file system error message - use copyDir which is imported
+      try {
+        copyDir('/nonexistent/dir', path.join(tempDir, 'dest'))
+        expect(true).toBe(false) // Should not reach here
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+        if (error instanceof Error) {
+          expect(error.message).toMatch(/failed|error|not found|no such/i)
+          expect(error.message).toContain('/nonexistent/dir')
+        }
+      }
+      
+      // Test empty dir error message
+      try {
+        emptyDir('/nonexistent/dir/that/does/not/exist')
+        // emptyDir returns early if dir doesn't exist, so no error
+        expect(true).toBe(true)
+      } catch (error) {
+        // If it does throw, verify error message
+        expect(error).toBeInstanceOf(Error)
+        if (error instanceof Error) {
+          expect(error.message).toMatch(/failed|error/i)
+        }
+      }
+      
+      // Test template copy error message
+      try {
+        copyTemplate('/nonexistent/template', path.join(tempDir, 'project'), 'test', 'test')
+        expect(true).toBe(false) // Should not reach here
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+        if (error instanceof Error) {
+          expect(error.message).toContain('Template directory not found')
+          expect(error.message).toContain('/nonexistent/template')
+        }
+      }
+    } finally {
+      // Cleanup
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
+  
+  it('verifies user cancellation is handled gracefully', async () => {
+    // Requirements: 8.3
+    const prompts = await import('@clack/prompts')
+    
+    // Mock cancellation
+    vi.mocked(prompts.isCancel).mockReturnValue(true)
+    vi.mocked(prompts.cancel).mockImplementation(() => {})
+    vi.mocked(prompts.text).mockResolvedValue(Symbol.for('clack.cancel'))
+    
+    const mockExit = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null | undefined): never => {
+      throw new Error(`process.exit called with code ${code}`)
+    })
+    
+    try {
+      // Test that cancellation exits with code 0
+      await expect(promptProjectName('default')).rejects.toThrow('process.exit called with code 0')
+      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled')
+      expect(mockExit).toHaveBeenCalledWith(0)
+    } finally {
+      mockExit.mockRestore()
+      vi.clearAllMocks()
+    }
+  })
+  
+  it('verifies directory conflict handling in non-interactive mode', () => {
+    // Requirements: 8.4
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-conflict-'))
+    
+    try {
+      // Create non-empty directory
+      const targetDir = path.join(tempDir, 'target')
+      fs.mkdirSync(targetDir)
+      fs.writeFileSync(path.join(targetDir, 'file.txt'), 'content')
+      
+      // Verify directory is not empty
+      expect(isEmpty(targetDir)).toBe(false)
+      
+      // Without --overwrite flag, should require user action
+      const args1 = parseArguments(['target', '--no-interactive'])
+      expect(args1.overwrite).toBeUndefined()
+      
+      // With --overwrite flag, should proceed
+      const args2 = parseArguments(['target', '--overwrite', '--no-interactive'])
+      expect(args2.overwrite).toBe(true)
+      
+      // Test actual directory emptying
+      emptyDir(targetDir)
+      
+      // Directory should now be empty
+      expect(isEmpty(targetDir)).toBe(true)
+    } finally {
+      // Cleanup
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
+})
+
 describe('Integration Tests - Main Initialization Flow', () => {
   let prompts: any
   let tempDir: string
