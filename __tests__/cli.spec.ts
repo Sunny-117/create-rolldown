@@ -138,9 +138,15 @@ test('uses default template when none specified in non-interactive mode', () => 
 test('converts invalid package name to valid one', () => {
   const invalidName = 'My-Invalid-Package-Name';
 
+  // Run the CLI with the invalid package name
+  const { stdout } = run([invalidName, '--no-interactive'], {
+    cwd: __dirname,
+  });
+
   const targetPath = path.join(__dirname, invalidName);
   const pkgJsonPath = path.join(targetPath, 'package.json');
 
+  expect(stdout).toContain(`Scaffolding project in ${targetPath}`);
   expect(fs.existsSync(targetPath)).toBe(true);
 
   const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'));

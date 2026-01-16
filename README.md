@@ -79,27 +79,6 @@ Available templates:
   svelte                       Svelte component library
 ```
 
-## Examples
-
-### Create a React library (components, hooks, utilities)
-
-```bash
-npm create rolldown@latest my-react-lib
-# Select "react"
-```
-
-### Create a utility library and start immediately
-
-```bash
-npm create rolldown@latest my-utils -- --template vanilla --immediate
-```
-
-### Create a Vue composables library in CI/CD
-
-```bash
-npm create rolldown@latest my-vue-composables -- --template vue --no-interactive
-```
-
 ## Supported Templates
 
 | Template  | Description                      | Use Cases                          | Playground |
@@ -110,64 +89,18 @@ npm create rolldown@latest my-vue-composables -- --template vue --no-interactive
 | `solid`   | SolidJS library with TypeScript  | Solid components, primitives       | ✅ Vite    |
 | `svelte`  | Svelte 5 library with TypeScript | Svelte components, actions         | ✅ Vite    |
 
-### Template Architecture
-
-**Vanilla Template** - For pure TypeScript/JavaScript libraries:
-
-```
-your-library/
-├── src/
-│   └── index.ts           # Main entry point
-├── dist/                  # Build output (generated)
-├── rolldown.config.ts
-├── tsconfig.json
-└── package.json
-```
-
-**Framework Templates** (React, Vue, Solid, Svelte) - For framework-specific libraries:
-
-```
-your-library/
-├── src/                    # Component library source code
-│   ├── index.ts           # Main entry point (exports)
-│   └── MyButton.*         # Example component
-├── playground/            # Development playground (Vite)
-│   ├── src/
-│   │   ├── App.*         # Playground app
-│   │   ├── index.*       # Playground entry
-│   │   └── style.css     # Playground styles
-│   ├── index.html
-│   └── public/
-├── dist/                  # Build output (generated)
-├── rolldown.config.js     # Rolldown configuration
-├── vite.config.ts         # Vite configuration (for playground)
-├── tsconfig.json
-├── package.json
-└── README.md
-```
-
-**Key Features:**
-
-- `src/` - Your library source code (built with Rolldown)
-- `playground/` - Development environment (powered by Vite with HMR)
-- `npm run build` - Build library with Rolldown
-- `npm run dev` - Watch mode for library development
-- `npm run play` - Start Vite playground for testing your library
-- Ready for npm publishing with proper exports configuration
-- Perfect for component libraries, utility libraries, hooks, composables, and more
-
 ## Development
 
 ### Prerequisites
 
 - Node.js 20.19.0+ or 22.12.0+
-- pnpm (recommended) or npm
+- pnpm (recommended)
 
 ### Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/rolldown/create-rolldown.git
+git clone https://github.com/Sunny-117/create-rolldown.git
 cd create-rolldown
 
 # Install dependencies
@@ -198,51 +131,6 @@ pnpm format
 pnpm format:check
 ```
 
-### Project Structure
-
-```
-create-rolldown/
-├── src/
-│   ├── cli.ts             # Main CLI entry point
-│   └── utils/             # Utility modules
-│       ├── args.ts        # Argument parsing
-│       ├── command.ts     # Command execution
-│       ├── constants.ts   # Framework definitions
-│       ├── file.ts        # File operations
-│       ├── package-manager.ts  # Package manager detection
-│       ├── prompts.ts     # Interactive prompts
-│       ├── types.ts       # TypeScript types
-│       └── validation.ts  # Input validation
-├── __tests__/
-│   └── cli.spec.ts        # Integration tests
-├── template-vanilla/      # Vanilla TS template
-├── template-react/        # React template
-├── template-vue/          # Vue template
-├── template-solid/        # Solid template
-├── template-svelte/       # Svelte template
-├── index.js               # CLI entry point
-├── package.json
-└── tsconfig.json
-```
-
-### Testing
-
-The project uses a comprehensive testing strategy:
-
-- **Unit Tests**: Test specific functions and edge cases
-- **Property-Based Tests**: Test universal properties across many inputs using [fast-check](https://github.com/dubzzz/fast-check)
-- **Integration Tests**: Test complete CLI workflows
-
-Run tests:
-
-```bash
-# Run all tests once
-pnpm test
-
-# Run tests in watch mode
-pnpm test:watch
-```
-
 ### Adding a New Template
 
 1. Create a new directory: `template-{framework}` (e.g., `template-preact`)
@@ -268,10 +156,6 @@ pnpm test:watch
 5. **Copy template files** to target directory
 6. **Update files** (package.json name, metadata)
 7. **Optionally install dependencies** and start playground
-
-## Requirements
-
-- Node.js ^20.19.0 || >=22.12.0
 
 ## Contributing
 
