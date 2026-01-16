@@ -24,7 +24,6 @@ export {
   promptOverwrite,
   promptPackageName,
   promptFramework,
-  promptVariant,
   promptImmediate,
 } from './prompts';
 

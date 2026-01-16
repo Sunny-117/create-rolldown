@@ -42,7 +42,7 @@ export function displayHelp(): void {
 Usage: create-rolldown [project-name] [options]
 
 Options:
-  -t, --template <name>     Use a specific template (vanilla or react)
+  -t, --template <name>     Use a specific template
   -h, --help                Display this help message
   --overwrite               Overwrite existing files in target directory
   -i, --immediate           Install dependencies and start dev server immediately
@@ -51,15 +51,18 @@ Options:
   --no-interactive          Force non-interactive mode
 
 Available templates:
-  vanilla                   Vanilla TypeScript (default)
-  react                     React with TypeScript
+  vanilla                   Vanilla TypeScript library (default)
+  react                     React library with TypeScript
+  vue                       Vue library with TypeScript
+  solid                     SolidJS library with TypeScript
+  svelte                    Svelte library with TypeScript
 
 Examples:
   $ npm create rolldown
-  $ npm create rolldown my-app
-  $ npm create rolldown my-app --template react
-  $ npm create rolldown my-app -t vanilla --immediate
-  $ npm create rolldown my-app --no-interactive --template react
+  $ npm create rolldown my-lib
+  $ npm create rolldown my-lib --template react
+  $ npm create rolldown my-lib -t vue --immediate
+  $ npm create rolldown my-lib --no-interactive --template solid
 `);
 }
 

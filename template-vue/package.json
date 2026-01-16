@@ -27,8 +27,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rolldown",
-    "dev": "rolldown --watch",
+    "build": "rolldown -c rolldown.config.js",
+    "dev": "rolldown -c rolldown.config.js --watch",
     "play": "vite",
     "typecheck": "vue-tsc --noEmit",
     "prepublishOnly": "pnpm run build"

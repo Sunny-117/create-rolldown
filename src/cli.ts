@@ -27,7 +27,6 @@ import {
   promptOverwrite,
   promptPackageName,
   promptFramework,
-  promptVariant,
   promptImmediate,
   FRAMEWORKS,
   TEMPLATES,
@@ -143,11 +142,9 @@ async function init(): Promise<void> {
     let template = args.template;
 
     if (interactive && !template) {
-      // Prompt for framework
+      // Prompt for framework (directly get template name)
       const framework = await promptFramework(FRAMEWORKS);
-
-      // Prompt for variant
-      template = await promptVariant(framework.variants);
+      template = framework.name; // Use framework name directly as template
     } else if (!template) {
       // Non-interactive mode without template - use default
       template = 'vanilla';
@@ -160,7 +157,7 @@ async function init(): Promise<void> {
           pc.yellow(`\n"${template}" isn't a valid template. Please choose from below:\n`)
         );
         const framework = await promptFramework(FRAMEWORKS);
-        template = await promptVariant(framework.variants);
+        template = framework.name; // Use framework name directly as template
       } else {
         console.log(
           pc.yellow(`\nTemplate "${template}" not found. Using default template "vanilla".\n`)

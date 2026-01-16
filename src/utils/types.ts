@@ -20,7 +20,7 @@ export interface CLIArguments {
 }
 
 /**
- * Framework variant interface
+ * Framework variant interface (deprecated - kept for backward compatibility)
  */
 export interface FrameworkVariant {
   name: string; // Variant identifier (template name)
@@ -33,10 +33,9 @@ export interface FrameworkVariant {
  * Framework interface
  */
 export interface Framework {
-  name: string; // Framework identifier
+  name: string; // Framework identifier (also used as template name)
   display: string; // Display name
   color: ColorFunc; // Color function
-  variants: FrameworkVariant[]; // Variant list
 }
 
 /**
