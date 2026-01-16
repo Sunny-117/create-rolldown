@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.0.0
 
-
 ### 🚀 Enhancements
 
 - **create-rolldown:** Add CLI scaffolding tool for Rolldown projects ([16c590b](https://github.com/sunny-117/create-rolldown/commit/16c590b))
