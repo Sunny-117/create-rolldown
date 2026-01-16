@@ -258,6 +258,89 @@ export function copyDir(srcDir: string, destDir: string): void {
 }
 
 /**
+ * Write a file with optional content transformation
+ * Handles special file renaming (e.g., _gitignore -> .gitignore)
+ * @param file - File path to write
+ * @param content - Optional content to write (if undefined, copies from template)
+ */
+export function write(file: string, content?: string): void {
+  const targetPath = renameFiles[path.basename(file)] ?? file
+  if (content) {
+    fs.writeFileSync(targetPath, content)
+  } else {
+    copy(file, targetPath)
+  }
+}
+
+/**
+ * Edit a file by applying a transformation function to its content
+ * @param file - File path to edit
+ * @param callback - Function that transforms the file content
+ */
+export function editFile(file: string, callback: (content: string) => string): void {
+  const content = fs.readFileSync(file, 'utf-8')
+  fs.writeFileSync(file, callback(content))
+}
+
+/**
+ * Copy template files to target directory with transformations
+ * @param templateDir - Source template directory
+ * @param root - Target root directory
+ * @param projectName - Project name for replacements
+ * @param packageName - Package name for package.json
+ */
+export function copyTemplate(
+  templateDir: string,
+  root: string,
+  projectName: string,
+  packageName: string
+): void {
+  // Create target directory if it doesn't exist
+  if (!fs.existsSync(root)) {
+    fs.mkdirSync(root, { recursive: true })
+  }
+  
+  const files = fs.readdirSync(templateDir)
+  
+  for (const file of files) {
+    const srcFile = path.join(templateDir, file)
+    const stat = fs.statSync(srcFile)
+    
+    if (stat.isDirectory()) {
+      // Recursively copy directories
+      const destDir = path.join(root, file)
+      copyDir(srcFile, destDir)
+    } else {
+      // Handle file renaming for special files
+      const destFileName = renameFiles[file] ?? file
+      const destFile = path.join(root, destFileName)
+      
+      // Copy the file
+      fs.copyFileSync(srcFile, destFile)
+    }
+  }
+  
+  // Update package.json with the correct package name
+  const pkgJsonPath = path.join(root, 'package.json')
+  if (fs.existsSync(pkgJsonPath)) {
+    editFile(pkgJsonPath, (content) => {
+      const pkg = JSON.parse(content)
+      pkg.name = packageName
+      return JSON.stringify(pkg, null, 2) + '\n'
+    })
+  }
+  
+  // Update index.html with the correct project name
+  const indexHtmlPath = path.join(root, 'index.html')
+  if (fs.existsSync(indexHtmlPath)) {
+    editFile(indexHtmlPath, (content) => {
+      // Use a replacement function to avoid issues with special regex characters
+      return content.replace(/<title>.*?<\/title>/, () => `<title>${projectName}</title>`)
+    })
+  }
+}
+
+/**
  * Package manager information
  */
 export interface PkgInfo {

@@ -9,6 +9,10 @@ import {
   toValidPackageName,
   isEmpty,
   emptyDir,
+  copyDir,
+  write,
+  editFile,
+  copyTemplate,
   pkgFromUserAgent,
   getInstallCommand,
   getRunCommand,
@@ -115,6 +119,207 @@ describe('Property Tests - File System Operations', () => {
             // Check that other files are removed
             const remainingFiles = fs.readdirSync(tempDir)
             expect(remainingFiles).toEqual(['.git'])
+          } finally {
+            // Cleanup
+            fs.rmSync(tempDir, { recursive: true, force: true })
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+})
+
+describe('Property Tests - File Generation and Template Handling', () => {
+  it('Property 7: File renaming consistency', () => {
+    // Feature: create-rolldown, Property 7: 文件重命名一致性
+    // Validates: Requirements 3.6
+    fc.assert(
+      fc.property(
+        fc.constantFrom('_gitignore', 'package.json', 'index.html', 'README.md'),
+        (fileName) => {
+          // Create a temporary directory for testing
+          const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-rename-'))
+          
+          try {
+            // Create source file
+            const srcFile = path.join(tempDir, fileName)
+            fs.writeFileSync(srcFile, 'test content')
+            
+            // Verify the renameFiles mapping
+            const expectedName = renameFiles[fileName] ?? fileName
+            
+            // For _gitignore, it should be renamed to .gitignore
+            if (fileName === '_gitignore') {
+              expect(expectedName).toBe('.gitignore')
+            } else {
+              // Other files should not be renamed
+              expect(expectedName).toBe(fileName)
+            }
+          } finally {
+            // Cleanup
+            fs.rmSync(tempDir, { recursive: true, force: true })
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  it('Property 8: Directory structure preservation', () => {
+    // Feature: create-rolldown, Property 8: 目录结构保持性
+    // Validates: Requirements 4.1, 4.2
+    fc.assert(
+      fc.property(
+        fc.array(
+          fc.record({
+            name: fc.string().filter((s) => s.length > 0 && s !== '.' && s !== '..' && !s.includes('/')),
+            isDir: fc.boolean(),
+          })
+        ).filter((arr) => {
+          // Ensure unique names to avoid conflicts
+          const names = arr.map(item => item.name)
+          const uniqueNames = new Set(names)
+          return arr.length > 0 && arr.length < 10 && names.length === uniqueNames.size
+        }),
+        (structure) => {
+          // Create a temporary directory for testing
+          const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-structure-'))
+          
+          try {
+            const srcDir = path.join(tempDir, 'src')
+            const destDir = path.join(tempDir, 'dest')
+            fs.mkdirSync(srcDir)
+            
+            // Create source structure
+            for (const item of structure) {
+              const itemPath = path.join(srcDir, item.name)
+              if (item.isDir) {
+                fs.mkdirSync(itemPath)
+                fs.writeFileSync(path.join(itemPath, 'file.txt'), 'content')
+              } else {
+                fs.writeFileSync(itemPath, 'content')
+              }
+            }
+            
+            // Copy directory
+            copyDir(srcDir, destDir)
+            
+            // Verify structure is preserved
+            for (const item of structure) {
+              const srcPath = path.join(srcDir, item.name)
+              const destPath = path.join(destDir, item.name)
+              
+              expect(fs.existsSync(destPath)).toBe(true)
+              
+              const srcStat = fs.statSync(srcPath)
+              const destStat = fs.statSync(destPath)
+              
+              expect(srcStat.isDirectory()).toBe(destStat.isDirectory())
+              expect(srcStat.isFile()).toBe(destStat.isFile())
+            }
+          } finally {
+            // Cleanup
+            fs.rmSync(tempDir, { recursive: true, force: true })
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  it('Property 9: package.json name replacement correctness', () => {
+    // Feature: create-rolldown, Property 9: package.json 名称替换正确性
+    // Validates: Requirements 4.3
+    fc.assert(
+      fc.property(
+        fc.string().filter((s) => isValidPackageName(s) && s.length > 0),
+        fc.string().filter((s) => s.length > 0),
+        (packageName, projectName) => {
+          // Create a temporary directory for testing
+          const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-pkgjson-'))
+          
+          try {
+            const templateDir = path.join(tempDir, 'template')
+            const targetDir = path.join(tempDir, 'target')
+            fs.mkdirSync(templateDir)
+            
+            // Create a template package.json
+            const templatePkg = {
+              name: 'template-name',
+              version: '1.0.0',
+              description: 'Template package',
+            }
+            fs.writeFileSync(
+              path.join(templateDir, 'package.json'),
+              JSON.stringify(templatePkg, null, 2)
+            )
+            
+            // Copy template
+            copyTemplate(templateDir, targetDir, projectName, packageName)
+            
+            // Verify package.json was updated
+            const targetPkgPath = path.join(targetDir, 'package.json')
+            expect(fs.existsSync(targetPkgPath)).toBe(true)
+            
+            const targetPkg = JSON.parse(fs.readFileSync(targetPkgPath, 'utf-8'))
+            expect(targetPkg.name).toBe(packageName)
+            expect(targetPkg.version).toBe(templatePkg.version)
+            expect(targetPkg.description).toBe(templatePkg.description)
+          } finally {
+            // Cleanup
+            fs.rmSync(tempDir, { recursive: true, force: true })
+          }
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  it('Property 10: index.html title update correctness', () => {
+    // Feature: create-rolldown, Property 10: index.html 标题更新正确性
+    // Validates: Requirements 4.4
+    fc.assert(
+      fc.property(
+        fc.string().filter((s) => s.length > 0 && !s.includes('<') && !s.includes('>')),
+        fc.string().filter((s) => isValidPackageName(s) && s.length > 0),
+        (projectName, packageName) => {
+          // Create a temporary directory for testing
+          const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-html-'))
+          
+          try {
+            const templateDir = path.join(tempDir, 'template')
+            const targetDir = path.join(tempDir, 'target')
+            fs.mkdirSync(templateDir)
+            
+            // Create a template index.html
+            const templateHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Template Title</title>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>`
+            fs.writeFileSync(path.join(templateDir, 'index.html'), templateHtml)
+            
+            // Also create package.json to satisfy copyTemplate
+            fs.writeFileSync(
+              path.join(templateDir, 'package.json'),
+              JSON.stringify({ name: 'template' }, null, 2)
+            )
+            
+            // Copy template
+            copyTemplate(templateDir, targetDir, projectName, packageName)
+            
+            // Verify index.html was updated
+            const targetHtmlPath = path.join(targetDir, 'index.html')
+            expect(fs.existsSync(targetHtmlPath)).toBe(true)
+            
+            const targetHtml = fs.readFileSync(targetHtmlPath, 'utf-8')
+            expect(targetHtml).toContain(`<title>${projectName}</title>`)
+            expect(targetHtml).not.toContain('<title>Template Title</title>')
           } finally {
             // Cleanup
             fs.rmSync(tempDir, { recursive: true, force: true })
