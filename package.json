@@ -68,7 +68,7 @@
     "vitest": "^1.2.0"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm format && pnpm lint"
+    "pre-commit": "pnpm format && pnpm lint && git add -u"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
