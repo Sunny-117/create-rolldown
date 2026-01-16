@@ -5,14 +5,14 @@ export function App() {
     <>
       <div>
         <a href="https://rolldown.rs" target="_blank" rel="noopener noreferrer">
-          <img src="/rolldown.svg" class="logo" alt="Rolldown logo" />
+          <img src="/rolldown.svg" className="logo" alt="Rolldown logo" />
         </a>
       </div>
       <h1>Rolldown + SolidJS</h1>
-      <div class="card">
+      <div className="card">
         <MyButton />
       </div>
-      <p class="read-the-docs">Click on the Rolldown logo to learn more</p>
+      <p className="read-the-docs">Click on the Rolldown logo to learn more</p>
     </>
   );
 }

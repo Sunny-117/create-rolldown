@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.0.5
+
+[compare changes](https://github.com/sunny-117/create-rolldown/compare/v0.0.1...v0.0.5)
+
+### 🚀 Enhancements
+
+- Add test coverage reporting and improve README with badges ([95e1bcd](https://github.com/sunny-117/create-rolldown/commit/95e1bcd))
+
+### 📖 Documentation
+
+- Simplify README and improve test coverage ([74e0c1c](https://github.com/sunny-117/create-rolldown/commit/74e0c1c))
+
+### 🏡 Chore
+
+- Release ([c799b97](https://github.com/sunny-117/create-rolldown/commit/c799b97))
+- Oxfix lint warn ([21e8161](https://github.com/sunny-117/create-rolldown/commit/21e8161))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.1
 
 [compare changes](https://github.com/sunny-117/create-rolldown/compare/v1.0.0...v0.0.1)
