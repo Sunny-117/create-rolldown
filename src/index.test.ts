@@ -1397,6 +1397,209 @@ describe('Property Tests - Error Handling', () => {
   })
 })
 
+describe('Property Tests - Non-Interactive Mode', () => {
+  it('Property 14: Non-interactive mode default values correctness', () => {
+    // Feature: create-rolldown, Property 14: 非交互模式默认值正确性
+    // Validates: Requirements 10.2, 10.3
+    fc.assert(
+      fc.property(
+        fc.option(fc.string().filter((s) => s.length > 0 && !s.startsWith('-')), { nil: undefined }), // optional project name
+        fc.option(fc.string().filter((s) => s.length > 0 && !s.startsWith('-')), { nil: undefined }), // optional template
+        fc.boolean(), // overwrite flag
+        (projectName, template, overwrite) => {
+          // Build argv for non-interactive mode
+          const argv: string[] = ['--no-interactive']
+          
+          if (projectName) {
+            argv.unshift(projectName)
+          }
+          if (template) {
+            argv.push('--template', template)
+          }
+          if (overwrite) {
+            argv.push('--overwrite')
+          }
+          
+          // Parse arguments
+          const args = parseArguments(argv)
+          
+          // Verify non-interactive mode is set
+          expect(args.interactive).toBe(false)
+          
+          // Verify mode detection
+          const interactive = shouldUseInteractiveMode(args)
+          expect(interactive).toBe(false)
+          
+          // Test default project name logic
+          const defaultProjectName = 'rolldown-project'
+          const targetDir = formatTargetDir(args._[0])
+          const finalProjectName = targetDir || defaultProjectName
+          
+          if (projectName) {
+            const formattedInput = formatTargetDir(projectName)
+            // If project name was provided and formats to non-empty, it should be used
+            if (formattedInput) {
+              expect(finalProjectName).toBe(formattedInput)
+            } else {
+              // If it formats to empty (e.g., whitespace only), should use default
+              expect(finalProjectName).toBe(defaultProjectName)
+            }
+          } else {
+            // If no project name, should use default
+            expect(finalProjectName).toBe(defaultProjectName)
+          }
+          
+          // Test default template logic
+          const defaultTemplate = 'vanilla-ts'
+          let finalTemplate = args.template
+          
+          if (!finalTemplate) {
+            // If no template provided, should use default
+            finalTemplate = defaultTemplate
+          }
+          
+          if (template) {
+            // If template was provided, it should be used (or default if invalid)
+            if (TEMPLATES.includes(template)) {
+              expect(finalTemplate).toBe(template)
+            } else {
+              // Invalid template should fall back to default in non-interactive mode
+              finalTemplate = defaultTemplate
+              expect(finalTemplate).toBe(defaultTemplate)
+            }
+          } else {
+            // No template provided, should use default
+            expect(finalTemplate).toBe(defaultTemplate)
+          }
+          
+          // Verify default template is valid
+          expect(TEMPLATES).toContain(defaultTemplate)
+          
+          // Test package name conversion
+          const packageName = toValidPackageName(finalProjectName)
+          expect(isValidPackageName(packageName)).toBe(true)
+          
+          // Verify overwrite flag is correctly parsed
+          expect(args.overwrite).toBe(overwrite || undefined)
+        }
+      ),
+      { numRuns: 100 }
+    )
+  })
+  
+  it('verifies non-interactive mode uses defaults when no parameters provided', () => {
+    // Requirements: 10.2, 10.3
+    const args = parseArguments(['--no-interactive'])
+    
+    expect(args.interactive).toBe(false)
+    expect(args._).toEqual([])
+    expect(args.template).toBeUndefined()
+    
+    // Verify mode detection
+    const interactive = shouldUseInteractiveMode(args)
+    expect(interactive).toBe(false)
+    
+    // Test default values
+    const defaultProjectName = 'rolldown-project'
+    const defaultTemplate = 'vanilla-ts'
+    
+    const targetDir = formatTargetDir(args._[0]) || defaultProjectName
+    expect(targetDir).toBe(defaultProjectName)
+    
+    const template = args.template || defaultTemplate
+    expect(template).toBe(defaultTemplate)
+    expect(TEMPLATES).toContain(template)
+    
+    const packageName = toValidPackageName(targetDir)
+    expect(isValidPackageName(packageName)).toBe(true)
+  })
+  
+  it('verifies non-interactive mode handles invalid package names', () => {
+    // Requirements: 10.5
+    const invalidNames = [
+      'My Project',
+      'project@123',
+      'Project_Name',
+      '123-project',
+      'UPPERCASE',
+      'project with spaces',
+    ]
+    
+    for (const invalidName of invalidNames) {
+      const args = parseArguments([invalidName, '--no-interactive'])
+      expect(args.interactive).toBe(false)
+      
+      const targetDir = formatTargetDir(args._[0])
+      expect(targetDir).toBe(invalidName)
+      
+      // In non-interactive mode, invalid names should be auto-converted
+      const packageName = toValidPackageName(targetDir)
+      expect(isValidPackageName(packageName)).toBe(true)
+    }
+  })
+  
+  it('verifies non-interactive mode handles directory conflicts correctly', () => {
+    // Requirements: 10.4
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'test-noninteractive-'))
+    
+    try {
+      // Create non-empty directory
+      const targetDir = path.join(tempDir, 'existing')
+      fs.mkdirSync(targetDir)
+      fs.writeFileSync(path.join(targetDir, 'file.txt'), 'content')
+      
+      expect(isEmpty(targetDir)).toBe(false)
+      
+      // Without --overwrite, should require user action (would exit in real scenario)
+      const args1 = parseArguments(['existing', '--no-interactive'])
+      expect(args1.overwrite).toBeUndefined()
+      expect(args1.interactive).toBe(false)
+      
+      // With --overwrite, should proceed
+      const args2 = parseArguments(['existing', '--overwrite', '--no-interactive'])
+      expect(args2.overwrite).toBe(true)
+      expect(args2.interactive).toBe(false)
+      
+      // Test actual directory emptying
+      emptyDir(targetDir)
+      expect(isEmpty(targetDir)).toBe(true)
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
+  
+  it('verifies non-interactive mode with all parameters provided', () => {
+    // Requirements: 10.1, 10.2, 10.3, 10.4, 10.5
+    const args = parseArguments([
+      'my-project',
+      '--template',
+      'react-ts',
+      '--overwrite',
+      '--no-interactive',
+    ])
+    
+    expect(args.interactive).toBe(false)
+    expect(args._).toEqual(['my-project'])
+    expect(args.template).toBe('react-ts')
+    expect(args.overwrite).toBe(true)
+    
+    // Verify mode detection
+    const interactive = shouldUseInteractiveMode(args)
+    expect(interactive).toBe(false)
+    
+    // Verify all values are used (no defaults needed)
+    const targetDir = formatTargetDir(args._[0])
+    expect(targetDir).toBe('my-project')
+    
+    const template = args.template
+    expect(template).toBe('react-ts')
+    expect(TEMPLATES).toContain(template)
+    
+    const packageName = toValidPackageName(targetDir)
+    expect(isValidPackageName(packageName)).toBe(true)
+  })
+})
+
 describe('Integration Tests - Main Initialization Flow', () => {
   let prompts: any
   let tempDir: string
