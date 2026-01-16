@@ -1,0 +1,25 @@
+# Source files
+src/
+playground/
+
+# Config files
+rolldown.config.js
+vite.config.ts
+tsconfig.json
+
+# Development files
+*.log
+.DS_Store
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Documentation (keep README.md)
+CHANGELOG.md
+
+# Tests
+__tests__/
+*.test.*
+*.spec.*

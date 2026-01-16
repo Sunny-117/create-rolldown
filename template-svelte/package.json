@@ -2,6 +2,15 @@
   "name": "rolldown-svelte-starter",
   "version": "0.0.0",
   "description": "A starter for creating a Svelte library with Rolldown.",
+  "keywords": [
+    "svelte",
+    "svelte5",
+    "rolldown",
+    "library",
+    "component",
+    "typescript",
+    "bundler"
+  ],
   "homepage": "https://github.com/author/library#readme",
   "bugs": {
     "url": "https://github.com/author/library/issues"

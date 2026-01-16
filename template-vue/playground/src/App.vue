@@ -3,9 +3,16 @@ import { MyButton } from '../../src';
 </script>
 
 <template>
+  <div>
+    <a href="https://rolldown.rs" target="_blank" rel="noopener noreferrer">
+      <img src="/rolldown.svg" class="logo" alt="Rolldown logo" />
+    </a>
+  </div>
   <h1>Rolldown + Vue</h1>
   <div class="card">
-    <MyButton type="primary" />
+    <MyButton />
   </div>
-  <p class="read-the-docs">Edit <code>src/MyButton.vue</code> to test your component</p>
+  <p class="read-the-docs">
+    Click on the Rolldown logo to learn more
+  </p>
 </template>

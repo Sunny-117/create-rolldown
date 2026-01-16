@@ -1,16 +1,18 @@
 import { useState } from 'react';
 
-interface MyButtonProps {
-  type?: 'primary';
-}
-
-export const MyButton: React.FC<MyButtonProps> = ({ type }) => {
+/**
+ * A simple counter button component
+ * @example
+ * ```tsx
+ * <MyButton />
+ * ```
+ */
+export function MyButton() {
   const [count, setCount] = useState(0);
+
   return (
-    <button className="my-button" onClick={() => setCount(count + 1)}>
-      my button
-      <br /> type: {type}
-      <br /> count: {count}
+    <button type="button" onClick={() => setCount((count) => count + 1)}>
+      count is {count}
     </button>
   );
-};
+}
