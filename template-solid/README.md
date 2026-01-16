@@ -1,15 +1,15 @@
-# Rolldown React Starter
+# Rolldown SolidJS Starter
 
-A starter template for creating a React library with Rolldown.
+A starter template for creating a SolidJS library with Rolldown.
 
 ## Features
 
 - ⚡️ Fast bundling with [Rolldown](https://rolldown.rs)
-- ⚛️ React 19 support
+- 🎯 SolidJS support
 - 🎮 Playground for development with Vite
 - 📦 Ready for publishing to npm
 - 🔧 TypeScript support
-- 💡 Perfect for React components, hooks, and utilities
+- 💡 Perfect for Solid components and primitives
 
 ## Development
 

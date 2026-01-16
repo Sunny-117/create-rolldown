@@ -1,7 +1,7 @@
 {
   "name": "rolldown-react-starter",
   "version": "0.0.0",
-  "description": "A starter for creating a React component library with Rolldown.",
+  "description": "A starter for creating a React library with Rolldown.",
   "homepage": "https://github.com/author/library#readme",
   "bugs": {
     "url": "https://github.com/author/library/issues"

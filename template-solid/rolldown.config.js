@@ -1,3 +1,4 @@
+import solid from 'rolldown-plugin-solid';
 import { defineConfig } from 'rolldown';
 
 export default defineConfig({
@@ -6,4 +7,6 @@ export default defineConfig({
     dir: 'dist',
     format: 'esm',
   },
+  external: ['solid-js'],
+  plugins: [solid()],
 });

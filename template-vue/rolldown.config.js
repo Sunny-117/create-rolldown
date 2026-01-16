@@ -6,4 +6,5 @@ export default defineConfig({
     dir: 'dist',
     format: 'esm',
   },
+  external: ['vue'],
 });

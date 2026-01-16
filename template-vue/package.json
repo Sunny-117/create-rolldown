@@ -1,7 +1,7 @@
 {
-  "name": "rolldown-vanilla-starter",
+  "name": "rolldown-vue-starter",
   "version": "0.0.0",
-  "description": "A starter for creating a TypeScript library with Rolldown.",
+  "description": "A starter for creating a Vue library with Rolldown.",
   "homepage": "https://github.com/author/library#readme",
   "bugs": {
     "url": "https://github.com/author/library/issues"
@@ -29,12 +29,20 @@
   "scripts": {
     "build": "rolldown",
     "dev": "rolldown --watch",
-    "typecheck": "tsc --noEmit",
+    "play": "vite",
+    "typecheck": "vue-tsc --noEmit",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
+    "@vitejs/plugin-vue": "^6.0.3",
     "rolldown": "^1.0.0-beta.60",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vue": "^3.5.25",
+    "vue-tsc": "^3.1.8"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
   }
 }

@@ -6,7 +6,8 @@ import type { Framework } from './types';
 
 /**
  * Supported frameworks with their variants
- * Note: Only TypeScript templates are supported (vanilla and react)
+ * All templates use TypeScript and are designed for library development
+ * (utility libraries, component libraries, tools, hooks, composables, etc.)
  */
 export const FRAMEWORKS: Framework[] = [
   {
@@ -28,6 +29,42 @@ export const FRAMEWORKS: Framework[] = [
     variants: [
       {
         name: 'react',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+    ],
+  },
+  {
+    name: 'vue',
+    display: 'Vue',
+    color: pc.green,
+    variants: [
+      {
+        name: 'vue',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+    ],
+  },
+  {
+    name: 'solid',
+    display: 'Solid',
+    color: pc.blue,
+    variants: [
+      {
+        name: 'solid',
+        display: 'TypeScript',
+        color: pc.blue,
+      },
+    ],
+  },
+  {
+    name: 'svelte',
+    display: 'Svelte',
+    color: pc.red,
+    variants: [
+      {
+        name: 'svelte',
         display: 'TypeScript',
         color: pc.blue,
       },

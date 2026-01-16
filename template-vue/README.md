@@ -1,15 +1,15 @@
-# Rolldown React Starter
+# Rolldown Vue Starter
 
-A starter template for creating a React library with Rolldown.
+A starter template for creating a Vue library with Rolldown.
 
 ## Features
 
 - ⚡️ Fast bundling with [Rolldown](https://rolldown.rs)
-- ⚛️ React 19 support
+- 💚 Vue 3 support
 - 🎮 Playground for development with Vite
 - 📦 Ready for publishing to npm
 - 🔧 TypeScript support
-- 💡 Perfect for React components, hooks, and utilities
+- 💡 Perfect for Vue components and composables
 
 ## Development
 
@@ -48,11 +48,11 @@ npm run typecheck
 ```
 ├── src/              # Library source code
 │   ├── index.ts      # Main entry point
-│   └── MyButton.tsx  # Example component
+│   └── MyButton.vue  # Example component
 ├── playground/       # Development playground
 │   ├── src/
-│   │   ├── App.tsx   # Playground app
-│   │   ├── index.tsx # Playground entry
+│   │   ├── App.vue   # Playground app
+│   │   ├── main.ts   # Playground entry
 │   │   └── style.css # Playground styles
 │   └── index.html
 ├── dist/             # Build output
@@ -63,10 +63,12 @@ npm run typecheck
 
 After building, you can import from your library:
 
-```tsx
+```vue
+<script setup>
 import { MyButton } from 'your-library-name';
+</script>
 
-function App() {
-  return <MyButton type="primary" />;
-}
+<template>
+  <MyButton type="primary" />
+</template>
 ```

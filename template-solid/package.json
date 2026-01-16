@@ -1,7 +1,7 @@
 {
-  "name": "rolldown-vanilla-starter",
+  "name": "rolldown-solid-starter",
   "version": "0.0.0",
-  "description": "A starter for creating a TypeScript library with Rolldown.",
+  "description": "A starter for creating a SolidJS library with Rolldown.",
   "homepage": "https://github.com/author/library#readme",
   "bugs": {
     "url": "https://github.com/author/library/issues"
@@ -20,7 +20,11 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "solid": "./dist/index.jsx",
+      "default": "./dist/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -29,12 +33,19 @@
   "scripts": {
     "build": "rolldown",
     "dev": "rolldown --watch",
+    "play": "vite",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run build"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",
     "rolldown": "^1.0.0-beta.60",
-    "typescript": "^5.9.3"
+    "rolldown-plugin-solid": "^0.2.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-solid": "^2.11.10"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.9"
   }
 }
