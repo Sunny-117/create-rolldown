@@ -1,6 +1,6 @@
 {
   "name": "create-rolldown",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0",
   "description": "Scaffolding tool for Rolldown projects",
   "keywords": [
     "bundler",
@@ -41,7 +41,8 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "prepare": "simple-git-hooks",
-    "prepublishOnly": "pnpm build && pnpm test"
+    "prepublishOnly": "pnpm build && pnpm test",
+    "release": "pnpm test && changelogen --release && npm publish && git push --follow-tags"
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
@@ -54,6 +55,7 @@
     "@types/cross-spawn": "^6.0.6",
     "@types/mri": "^1.1.5",
     "@types/node": "^20.11.0",
+    "changelogen": "^0.6.2",
     "execa": "^9.0.0",
     "fast-check": "^3.15.0",
     "oxfmt": "^0.24.0",
