@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.0.6
+
+[compare changes](https://github.com/sunny-117/create-rolldown/compare/v0.0.5...v0.0.6)
+
+### 🚀 Enhancements
+
+- Update build scripts to use TypeScript config and add new config files for various templates ([f44d9d8](https://github.com/sunny-117/create-rolldown/commit/f44d9d8))
+
+### 📖 Documentation
+
+- Update readme ([f54df2e](https://github.com/sunny-117/create-rolldown/commit/f54df2e))
+- Update readme ([85104a0](https://github.com/sunny-117/create-rolldown/commit/85104a0))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.5
 
 [compare changes](https://github.com/sunny-117/create-rolldown/compare/v0.0.1...v0.0.5)
