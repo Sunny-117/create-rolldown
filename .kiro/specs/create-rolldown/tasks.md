@@ -25,27 +25,27 @@
   - 创建基本的目录结构（src/、template-* 等）
   - _Requirements: 9.1, 9.2_
 
-- [ ] 2. 实现核心工具函数
-  - [ ] 2.1 实现字符串验证和格式化函数
+- [x] 2. 实现核心工具函数
+  - [x] 2.1 实现字符串验证和格式化函数
     - 实现 formatTargetDir：去除尾部斜杠和空格
     - 实现 isValidPackageName：验证 npm 包名称格式
     - 实现 toValidPackageName：转换为有效的包名称
     - _Requirements: 1.3, 2.5, 10.5_
 
-  - [ ] 2.2 编写工具函数的属性测试
+  - [x] 2.2 编写工具函数的属性测试
     - **Property 3: 目录名称格式化幂等性**
     - **Property 4: 包名称验证和转换正确性**
     - **Property 15: 包名称转换往返一致性**
     - **Validates: Requirements 1.3, 2.5, 10.5**
 
-  - [ ] 2.3 实现文件系统工具函数
+  - [x] 2.3 实现文件系统工具函数
     - 实现 isEmpty：检查目录是否为空（忽略 .git）
     - 实现 emptyDir：清空目录但保留 .git
     - 实现 copy：复制文件或目录
     - 实现 copyDir：递归复制目录
     - _Requirements: 4.2, 4.5, 4.6_
 
-  - [ ] 2.4 编写文件系统函数的属性测试
+  - [x] 2.4 编写文件系统函数的属性测试
     - **Property 11: 目录清空保留 .git**
     - **Validates: Requirements 4.6**
 
