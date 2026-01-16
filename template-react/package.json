@@ -1,0 +1,18 @@
+{
+  "name": "rolldown-react-starter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "rolldown --watch",
+    "build": "rolldown"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@rolldown/plugin-babel": "^0.17.0",
+    "rolldown": "^0.17.0"
+  }
+}

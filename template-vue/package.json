@@ -1,0 +1,17 @@
+{
+  "name": "rolldown-vue-starter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "rolldown --watch",
+    "build": "rolldown"
+  },
+  "dependencies": {
+    "vue": "^3.5.26"
+  },
+  "devDependencies": {
+    "rolldown": "^0.17.0",
+    "unplugin-vue": "^6.0.2"
+  }
+}

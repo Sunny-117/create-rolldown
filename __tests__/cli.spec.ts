@@ -1,0 +1,287 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import type { SyncOptions } from 'execa'
+import { execaCommandSync } from 'execa'
+import { afterAll, afterEach, beforeAll, expect, test } from 'vitest'
+
+const CLI_PATH = path.join(__dirname, '..')
+
+const projectName = 'test-app'
+const genPath = path.join(__dirname, projectName)
+const genPathWithSubfolder = path.join(__dirname, 'subfolder', projectName)
+
+const run = (args: string[], options?: SyncOptions) => {
+  return execaCommandSync(`node ${CLI_PATH} ${args.join(' ')}`, {
+    env: { ...process.env, _ROLLDOWN_TEST_CLI: 'true' },
+    ...options,
+  })
+}
+
+// Helper to create a non-empty directory
+const createNonEmptyDir = (overrideFolder?: string) => {
+  // Create the temporary directory
+  const newNonEmptyFolder = overrideFolder || genPath
+  fs.mkdirSync(newNonEmptyFolder, { recursive: true })
+
+  // Create a package.json file
+  const pkgJson = path.join(newNonEmptyFolder, 'package.json')
+  fs.writeFileSync(pkgJson, '{ "foo": "bar" }')
+}
+
+// Vue 3 starter template
+const templateFiles = fs
+  .readdirSync(path.join(CLI_PATH, 'template-vue'))
+  // _gitignore is renamed to .gitignore
+  .map((filePath) => (filePath === '_gitignore' ? '.gitignore' : filePath))
+  .sort()
+
+// React starter template
+const templateFilesReact = fs
+  .readdirSync(path.join(CLI_PATH, 'template-react'))
+  // _gitignore is renamed to .gitignore
+  .map((filePath) => (filePath === '_gitignore' ? '.gitignore' : filePath))
+  .sort()
+
+const clearAnyPreviousFolders = () => {
+  if (fs.existsSync(genPath)) {
+    fs.rmSync(genPath, { recursive: true, force: true })
+  }
+  if (fs.existsSync(genPathWithSubfolder)) {
+    fs.rmSync(genPathWithSubfolder, { recursive: true, force: true })
+  }
+  // Clean up the subfolder directory if it exists
+  const subfolderPath = path.join(__dirname, 'subfolder')
+  if (fs.existsSync(subfolderPath)) {
+    fs.rmSync(subfolderPath, { recursive: true, force: true })
+  }
+  // Clean up rolldown-project if it exists in the root
+  const rolldownProjectPath = path.join(CLI_PATH, 'rolldown-project')
+  if (fs.existsSync(rolldownProjectPath)) {
+    fs.rmSync(rolldownProjectPath, { recursive: true, force: true })
+  }
+  // Clean up any test-* directories in __tests__
+  const testDirs = fs.readdirSync(__dirname).filter(file => 
+    file.startsWith('test-') || file.startsWith('My-Invalid-')
+  )
+  testDirs.forEach(dir => {
+    const dirPath = path.join(__dirname, dir)
+    if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
+      fs.rmSync(dirPath, { recursive: true, force: true })
+    }
+  })
+}
+
+beforeAll(() => clearAnyPreviousFolders())
+// Only clean up after all tests complete to avoid interfering with tests that read files
+afterAll(() => clearAnyPreviousFolders())
+
+test('prompts for the project name if none supplied', () => {
+  const { stdout } = run(['--interactive'])
+  expect(stdout).toContain('Project name:')
+})
+
+test('prompts for the framework if none supplied', () => {
+  const { stdout } = run([projectName, '--interactive'])
+  expect(stdout).toContain('Select a framework:')
+})
+
+test('prompts for the framework on not supplying a value for --template', () => {
+  const { stdout } = run([projectName, '--interactive', '--template'])
+  expect(stdout).toContain('Select a framework:')
+})
+
+test('prompts for the framework on supplying an invalid template', () => {
+  const { stdout } = run([
+    projectName,
+    '--interactive',
+    '--template',
+    'unknown',
+  ])
+  expect(stdout).toContain(
+    `"unknown" isn't a valid template. Please choose from below:`,
+  )
+})
+
+test('asks to overwrite non-empty target directory', () => {
+  createNonEmptyDir()
+  const { stdout } = run([projectName, '--interactive'], { cwd: __dirname })
+  expect(stdout).toContain(`Target directory "${projectName}" is not empty.`)
+})
+
+test('asks to overwrite non-empty target directory with subfolder', () => {
+  createNonEmptyDir(genPathWithSubfolder)
+  const { stdout } = run([`subfolder/${projectName}`, '--interactive'], {
+    cwd: __dirname,
+  })
+  expect(stdout).toContain(
+    `Target directory "subfolder/${projectName}" is not empty.`,
+  )
+})
+
+test('asks to overwrite non-empty current directory', () => {
+  createNonEmptyDir()
+  const { stdout } = run(['.', '--interactive'], { cwd: genPath })
+  expect(stdout).toContain(`Current directory is not empty.`)
+})
+
+test('successfully scaffolds a project based on vue starter template', () => {
+  const { stdout } = run(
+    [projectName, '--no-interactive', '--template', 'vue'],
+    {
+      cwd: __dirname,
+    },
+  )
+  const generatedFiles = fs.readdirSync(genPath).sort()
+
+  // Assertions
+  expect(stdout).toContain(`Scaffolding project in ${genPath}`)
+  expect(templateFiles).toEqual(generatedFiles)
+})
+
+test('successfully scaffolds a project with subfolder based on react starter template', () => {
+  const { stdout } = run(
+    [`subfolder/${projectName}`, '--no-interactive', '--template', 'react'],
+    {
+      cwd: __dirname,
+    },
+  )
+  const generatedFiles = fs.readdirSync(genPathWithSubfolder).sort()
+
+  // Assertions
+  expect(stdout).toContain(`Scaffolding project in ${genPathWithSubfolder}`)
+  expect(templateFilesReact).toEqual(generatedFiles)
+})
+
+test('works with the -t alias', () => {
+  const { stdout } = run(
+    [projectName, '--no-interactive', '-t', 'vue'],
+    {
+      cwd: __dirname,
+    },
+  )
+  const generatedFiles = fs.readdirSync(genPath).sort()
+
+  // Assertions
+  expect(stdout).toContain(`Scaffolding project in ${genPath}`)
+  expect(templateFiles).toEqual(generatedFiles)
+})
+
+test('accepts command line override for --overwrite', () => {
+  createNonEmptyDir()
+  const { stdout } = run(['.', '--no-interactive', '--overwrite'], {
+    cwd: genPath,
+  })
+  expect(stdout).not.toContain(`Target directory "." is not empty.`)
+  expect(stdout).toContain('Scaffolding project')
+})
+
+test('skip prompts when --no-interactive is passed', () => {
+  const { stdout } = run([projectName, '--no-interactive'], { cwd: __dirname })
+  expect(stdout).not.toContain('Project name:')
+  expect(stdout).toContain('Done. Now run:')
+})
+
+test('return help usage how to use create-rolldown', () => {
+  const { stdout } = run(['--help'], { cwd: __dirname })
+  const message = 'Usage: create-rolldown'
+  expect(stdout).toContain(message)
+})
+
+test('return help usage how to use create-rolldown with -h alias', () => {
+  const { stdout } = run(['-h'], { cwd: __dirname })
+  const message = 'Usage: create-rolldown'
+  expect(stdout).toContain(message)
+})
+
+test('sets index.html title to project name', () => {
+  const { stdout } = run([projectName, '--template', 'react'], {
+    cwd: __dirname,
+  })
+
+  const indexHtmlPath = path.join(genPath, 'index.html')
+  const indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf-8')
+
+  expect(stdout).toContain(`Scaffolding project in ${genPath}`)
+  expect(indexHtmlContent).toContain(`<title>${projectName}</title>`)
+})
+
+test('accepts immediate flag', () => {
+  const { stdout } = run([projectName, '--template', 'vue', '--immediate'], {
+    cwd: __dirname,
+  })
+  expect(stdout).not.toContain('Install and start now?')
+  expect(stdout).toContain(`Scaffolding project in ${genPath}`)
+  expect(stdout).toContain('Installing dependencies')
+})
+
+test('accepts no-immediate flag and skips install prompt', () => {
+  const { stdout } = run([projectName, '--template', 'vue', '--no-immediate'], {
+    cwd: __dirname,
+  })
+  expect(stdout).not.toContain('Install and start now?')
+  expect(stdout).not.toContain('Installing dependencies')
+  expect(stdout).toContain(`Scaffolding project in ${genPath}`)
+})
+
+test('uses default template when none specified in non-interactive mode', () => {
+  const { stdout } = run([projectName, '--no-interactive'], {
+    cwd: __dirname,
+  })
+  
+  expect(stdout).toContain(`Scaffolding project in ${genPath}`)
+  expect(fs.existsSync(genPath)).toBe(true)
+  
+  // Should use vanilla-ts as default
+  const pkgJsonPath = path.join(genPath, 'package.json')
+  expect(fs.existsSync(pkgJsonPath)).toBe(true)
+})
+
+test('converts invalid package name to valid one', () => {
+  const invalidName = 'My-Invalid-Package-Name'
+  const { stdout } = run([invalidName, '--template', 'vue', '--no-interactive'], {
+    cwd: __dirname,
+  })
+  
+  const targetPath = path.join(__dirname, invalidName)
+  const pkgJsonPath = path.join(targetPath, 'package.json')
+  
+  expect(fs.existsSync(targetPath)).toBe(true)
+  
+  const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'))
+  // Should be converted to valid package name (lowercase)
+  expect(pkgJson.name).toBe('my-invalid-package-name')
+  
+  // Cleanup
+  fs.rmSync(targetPath, { recursive: true, force: true })
+})
+
+test('handles all supported templates', () => {
+  const templates = [
+    'vanilla',
+    'vanilla-ts',
+    'vue',
+    'vue-ts',
+    'react',
+    'react-ts',
+    'svelte',
+    'svelte-ts',
+    'solid',
+    'solid-ts',
+    'qwik',
+    'qwik-ts',
+  ]
+  
+  templates.forEach((template) => {
+    const testPath = path.join(__dirname, `test-${template}`)
+    
+    const { stdout } = run([`test-${template}`, '--template', template, '--no-interactive'], {
+      cwd: __dirname,
+    })
+    
+    expect(stdout).toContain(`Scaffolding project in ${testPath}`)
+    expect(fs.existsSync(testPath)).toBe(true)
+    
+    // Cleanup
+    fs.rmSync(testPath, { recursive: true, force: true })
+  })
+})

@@ -169,6 +169,16 @@ export const renameFiles: Record<string, string | undefined> = {
 }
 
 /**
+ * Exit the process (skipped in test mode)
+ * @param code - Exit code
+ */
+function exitProcess(code: number): void {
+  if (!process.env._ROLLDOWN_TEST_CLI) {
+    process.exit(code)
+  }
+}
+
+/**
  * Format target directory by removing trailing slashes and whitespace
  * @param targetDir - The directory path to format
  * @returns Formatted directory path
@@ -467,6 +477,10 @@ export function parseArguments(argv: string[] = process.argv.slice(2)): CLIArgum
     },
     boolean: ['help', 'overwrite', 'immediate', 'interactive'],
     string: ['template'],
+    default: {
+      immediate: undefined,
+      interactive: undefined,
+    },
   })
   
   return {
@@ -491,6 +505,7 @@ Options:
   -h, --help                Display this help message
   --overwrite               Overwrite existing files in target directory
   -i, --immediate           Install dependencies and start dev server immediately
+  --no-immediate            Skip dependency installation
   --interactive             Force interactive mode
   --no-interactive          Force non-interactive mode
 
@@ -545,7 +560,7 @@ export async function promptProjectName(defaultValue: string): Promise<string> {
   
   if (prompts.isCancel(result)) {
     prompts.cancel('Operation cancelled')
-    process.exit(0)
+    exitProcess(0)
   }
   
   return result as string
@@ -559,8 +574,11 @@ export async function promptProjectName(defaultValue: string): Promise<string> {
 export async function promptOverwrite(
   targetDir: string
 ): Promise<'yes' | 'no' | 'ignore'> {
+  const displayDir = targetDir === '.' ? 'Current directory' : `Target directory "${targetDir}"`
+  const message = `${displayDir} is not empty. Please choose how to proceed:`
+  
   const result = await prompts.select({
-    message: `Target directory "${targetDir}" is not empty. Please choose how to proceed:`,
+    message,
     options: [
       {
         value: 'yes',
@@ -579,7 +597,7 @@ export async function promptOverwrite(
   
   if (prompts.isCancel(result)) {
     prompts.cancel('Operation cancelled')
-    process.exit(0)
+    exitProcess(0)
   }
   
   return result as 'yes' | 'no' | 'ignore'
@@ -607,7 +625,7 @@ export async function promptPackageName(defaultValue: string): Promise<string> {
   
   if (prompts.isCancel(result)) {
     prompts.cancel('Operation cancelled')
-    process.exit(0)
+    exitProcess(0)
   }
   
   return result as string
@@ -631,7 +649,7 @@ export async function promptFramework(
   
   if (prompts.isCancel(result)) {
     prompts.cancel('Operation cancelled')
-    process.exit(0)
+    exitProcess(0)
   }
   
   return result as Framework
@@ -655,7 +673,7 @@ export async function promptVariant(
   
   if (prompts.isCancel(result)) {
     prompts.cancel('Operation cancelled')
-    process.exit(0)
+    exitProcess(0)
   }
   
   return result as string
@@ -674,7 +692,7 @@ export async function promptImmediate(pkgManager: string): Promise<boolean> {
   
   if (prompts.isCancel(result)) {
     prompts.cancel('Operation cancelled')
-    process.exit(0)
+    exitProcess(0)
   }
   
   return result as boolean
@@ -773,7 +791,7 @@ export function start(root: string, agent: string): void {
  * Main initialization function
  * Orchestrates the entire project creation workflow
  */
-async function init(): Promise<void> {
+export async function init(): Promise<void> {
   try {
     const args = parseArguments()
     
@@ -816,7 +834,7 @@ async function init(): Promise<void> {
         
         if (overwrite === 'no') {
           console.log(pc.red('\nOperation cancelled'))
-          process.exit(0)
+          exitProcess(0)
         } else if (overwrite === 'yes') {
           console.log(pc.cyan(`\nRemoving existing files in ${targetDir}...`))
           try {
@@ -826,7 +844,7 @@ async function init(): Promise<void> {
             if (error instanceof Error) {
               console.error(pc.red(`Error: ${error.message}`))
             }
-            process.exit(1)
+            exitProcess(1)
           }
         }
         // If 'ignore', continue without clearing
@@ -841,12 +859,12 @@ async function init(): Promise<void> {
             if (error instanceof Error) {
               console.error(pc.red(`Error: ${error.message}`))
             }
-            process.exit(1)
+            exitProcess(1)
           }
         } else {
           console.log(pc.red(`\nTarget directory "${targetDir}" is not empty.`))
           console.log(pc.red('Use --overwrite flag to overwrite existing files, or choose a different directory.'))
-          process.exit(1)
+          exitProcess(1)
         }
       }
     }
@@ -874,7 +892,7 @@ async function init(): Promise<void> {
     // Validate template
     if (!TEMPLATES.includes(template)) {
       if (interactive) {
-        console.log(pc.yellow(`\nTemplate "${template}" not found. Please select from available templates:\n`))
+        console.log(pc.yellow(`\n"${template}" isn't a valid template. Please choose from below:\n`))
         const framework = await promptFramework(FRAMEWORKS)
         template = await promptVariant(framework.variants)
       } else {
@@ -888,8 +906,12 @@ async function init(): Promise<void> {
     const pkgManager = pkgInfo?.name || 'npm'
     
     // Ask about immediate installation (interactive only)
-    let shouldInstall = args.immediate || false
-    if (interactive && !args.immediate) {
+    let shouldInstall = false
+    if (args.immediate === true) {
+      shouldInstall = true
+    } else if (args.immediate === false) {
+      shouldInstall = false
+    } else if (interactive) {
       shouldInstall = await promptImmediate(pkgManager)
     }
     
@@ -913,7 +935,7 @@ async function init(): Promise<void> {
       if (error instanceof Error) {
         console.error(pc.red(`Error: ${error.message}`))
       }
-      process.exit(1)
+      exitProcess(1)
     }
     
     // Copy template files
@@ -924,7 +946,7 @@ async function init(): Promise<void> {
       if (error instanceof Error) {
         console.error(pc.red(`Error: ${error.message}`))
       }
-      process.exit(1)
+      exitProcess(1)
     }
     
     console.log(pc.green('\n✓ Project created successfully!'))
@@ -941,11 +963,11 @@ async function init(): Promise<void> {
         if (error instanceof Error) {
           console.error(pc.red(`Error: ${error.message}`))
         }
-        process.exit(1)
+        exitProcess(1)
       }
     } else {
       // Display next steps
-      console.log(pc.cyan('\nNext steps:'))
+      console.log(pc.cyan('\nDone. Now run:\n'))
       
       const cdCommand = path.relative(process.cwd(), root)
       if (cdCommand) {
@@ -967,17 +989,17 @@ async function init(): Promise<void> {
     } else {
       console.error(pc.red(`\n✗ An unexpected error occurred: ${String(error)}`))
     }
-    process.exit(1)
+    exitProcess(1)
   }
 }
 
-// Only run init if not in test environment
-if (!process.env._ROLLDOWN_TEST_CLI && !process.env.VITEST) {
-  init().catch((error) => {
-    // Error handling is already done in init(), but catch any unhandled errors
-    if (error instanceof Error && error.message !== 'process.exit called with code 0') {
-      console.error(pc.red(`\n✗ Fatal error: ${error.message}`))
-    }
-    process.exit(1)
-  })
-}
+// Run init function
+init().catch((error) => {
+  // Error handling is already done in init(), but catch any unhandled errors
+  if (error instanceof Error && error.message !== 'process.exit called with code 0') {
+    console.error(pc.red(`\n✗ Fatal error: ${error.message}`))
+  }
+  if (!process.env._ROLLDOWN_TEST_CLI && !process.env.VITEST) {
+    exitProcess(1)
+  }
+})

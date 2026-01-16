@@ -1,0 +1,1 @@
+{"name":"template-svelte","private":true,"version":"0.0.0","type":"module","scripts":{"dev":"rolldown --watch","build":"rolldown"},"devDependencies":{"rolldown":"^0.17.0"}}

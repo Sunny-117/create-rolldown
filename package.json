@@ -34,6 +34,7 @@
     "@types/cross-spawn": "^6.0.6",
     "@types/mri": "^1.1.5",
     "@types/node": "^20.11.0",
+    "execa": "^9.0.0",
     "fast-check": "^3.15.0",
     "tsdown": "^0.2.0",
     "typescript": "^5.3.3",

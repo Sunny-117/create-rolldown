@@ -31,7 +31,7 @@ import {
   renameFiles,
   type CLIArguments,
   type Framework,
-} from './index'
+} from '../src/index'
 
 // Mock @clack/prompts module
 vi.mock('@clack/prompts', () => ({
@@ -1028,12 +1028,12 @@ describe('Unit Tests - Interactive Prompts', () => {
 
 describe('Unit Tests - Command Execution', () => {
   // Import the functions we need to test
-  let run: typeof import('./index').run
-  let install: typeof import('./index').install
-  let start: typeof import('./index').start
+  let run: typeof import('../src/index').run
+  let install: typeof import('../src/index').install
+  let start: typeof import('../src/index').start
   
   beforeEach(async () => {
-    const module = await import('./index')
+    const module = await import('../src/index')
     run = module.run
     install = module.install
     start = module.start
