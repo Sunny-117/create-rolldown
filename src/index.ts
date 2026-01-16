@@ -3,9 +3,11 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+import { SpawnOptions } from 'node:child_process'
 import mri from 'mri'
 import pc from 'picocolors'
 import * as prompts from '@clack/prompts'
+import spawn from 'cross-spawn'
 
 /**
  * CLI Arguments interface
@@ -639,6 +641,66 @@ export async function promptImmediate(pkgManager: string): Promise<boolean> {
   }
   
   return result as boolean
+}
+
+/**
+ * Execute a command using cross-spawn
+ * @param command - Command array [command, ...args]
+ * @param options - Spawn options
+ */
+export function run(command: string[], options?: SpawnOptions): void {
+  // Skip actual command execution in test environment
+  if (process.env._ROLLDOWN_TEST_CLI) {
+    return
+  }
+  
+  const [cmd, ...args] = command
+  const result = spawn.sync(cmd, args, {
+    stdio: 'inherit',
+    ...options,
+  })
+  
+  if (result.error) {
+    throw result.error
+  }
+  
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1)
+  }
+}
+
+/**
+ * Install dependencies in the project directory
+ * @param root - Project root directory
+ * @param agent - Package manager name
+ */
+export function install(root: string, agent: string): void {
+  const installCmd = getInstallCommand(agent)
+  console.log(pc.cyan(`\nInstalling dependencies with ${agent}...`))
+  
+  // Skip actual installation in test environment
+  if (process.env._ROLLDOWN_TEST_CLI) {
+    return
+  }
+  
+  run(installCmd, { cwd: root })
+}
+
+/**
+ * Start the development server
+ * @param root - Project root directory
+ * @param agent - Package manager name
+ */
+export function start(root: string, agent: string): void {
+  const runCmd = getRunCommand(agent, 'dev')
+  console.log(pc.cyan(`\nStarting dev server...`))
+  
+  // Skip actual server start in test environment
+  if (process.env._ROLLDOWN_TEST_CLI) {
+    return
+  }
+  
+  run(runCmd, { cwd: root })
 }
 
 async function init(): Promise<void> {

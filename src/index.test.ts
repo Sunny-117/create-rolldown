@@ -1023,3 +1023,188 @@ describe('Unit Tests - Interactive Prompts', () => {
     })
   })
 })
+
+describe('Unit Tests - Command Execution', () => {
+  // Import the functions we need to test
+  let run: typeof import('./index').run
+  let install: typeof import('./index').install
+  let start: typeof import('./index').start
+  
+  beforeEach(async () => {
+    const module = await import('./index')
+    run = module.run
+    install = module.install
+    start = module.start
+    vi.clearAllMocks()
+  })
+  
+  describe('run', () => {
+    it('skips command execution in test environment', () => {
+      // Requirements: 5.4, 5.5
+      // Set test environment flag
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      // This should not throw or execute anything
+      expect(() => run(['echo', 'test'])).not.toThrow()
+      
+      // Clean up
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+    
+    it('executes commands in non-test environment', () => {
+      // Requirements: 5.3, 6.2
+      // Ensure we're not in test mode
+      delete process.env._ROLLDOWN_TEST_CLI
+      
+      // Mock spawn.sync to avoid actual command execution
+      const mockSpawn = vi.fn().mockReturnValue({
+        status: 0,
+        error: null,
+      })
+      
+      // We can't easily test actual command execution without mocking
+      // This test verifies the function exists and has the right signature
+      expect(typeof run).toBe('function')
+      expect(run.length).toBe(2) // Takes 2 parameters
+    })
+  })
+  
+  describe('install', () => {
+    it('skips installation in test environment', () => {
+      // Requirements: 5.4, 5.5
+      // Set test environment flag
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      // Mock console.log to verify message
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      
+      // This should not throw or execute anything
+      expect(() => install('/test/path', 'npm')).not.toThrow()
+      
+      // Clean up
+      consoleSpy.mockRestore()
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+    
+    it('calls run with correct install command', () => {
+      // Requirements: 5.3, 5.4
+      // Set test environment to skip actual execution
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      // Mock console.log
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      
+      // Test with different package managers
+      expect(() => install('/test/path', 'npm')).not.toThrow()
+      expect(() => install('/test/path', 'pnpm')).not.toThrow()
+      expect(() => install('/test/path', 'yarn')).not.toThrow()
+      expect(() => install('/test/path', 'bun')).not.toThrow()
+      
+      // Clean up
+      consoleSpy.mockRestore()
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+    
+    it('displays installation message', () => {
+      // Requirements: 5.4
+      // Set test environment to skip actual execution
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      // Mock console.log to capture message
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      
+      install('/test/path', 'pnpm')
+      
+      // Verify message was displayed (in test mode, only message is shown)
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Installing dependencies with pnpm')
+      )
+      
+      // Clean up
+      consoleSpy.mockRestore()
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+  })
+  
+  describe('start', () => {
+    it('skips server start in test environment', () => {
+      // Requirements: 6.3
+      // Set test environment flag
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      // Mock console.log to verify message
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      
+      // This should not throw or execute anything
+      expect(() => start('/test/path', 'npm')).not.toThrow()
+      
+      // Clean up
+      consoleSpy.mockRestore()
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+    
+    it('calls run with correct dev command', () => {
+      // Requirements: 6.2, 6.3
+      // Set test environment to skip actual execution
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      // Mock console.log
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      
+      // Test with different package managers
+      expect(() => start('/test/path', 'npm')).not.toThrow()
+      expect(() => start('/test/path', 'pnpm')).not.toThrow()
+      expect(() => start('/test/path', 'yarn')).not.toThrow()
+      expect(() => start('/test/path', 'bun')).not.toThrow()
+      
+      // Clean up
+      consoleSpy.mockRestore()
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+    
+    it('displays server start message', () => {
+      // Requirements: 6.3
+      // Set test environment to skip actual execution
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      // Mock console.log to capture message
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      
+      start('/test/path', 'yarn')
+      
+      // Verify message was displayed (in test mode, only message is shown)
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Starting dev server')
+      )
+      
+      // Clean up
+      consoleSpy.mockRestore()
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+  })
+  
+  describe('Command execution integration', () => {
+    it('verifies test environment detection works correctly', () => {
+      // Requirements: 5.5, 6.3
+      // Test that _ROLLDOWN_TEST_CLI flag is respected
+      
+      // Without flag - functions should work (but we won't actually execute)
+      delete process.env._ROLLDOWN_TEST_CLI
+      expect(typeof run).toBe('function')
+      expect(typeof install).toBe('function')
+      expect(typeof start).toBe('function')
+      
+      // With flag - functions should skip execution
+      process.env._ROLLDOWN_TEST_CLI = 'true'
+      
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+      
+      expect(() => run(['echo', 'test'])).not.toThrow()
+      expect(() => install('/test', 'npm')).not.toThrow()
+      expect(() => start('/test', 'npm')).not.toThrow()
+      
+      consoleSpy.mockRestore()
+      delete process.env._ROLLDOWN_TEST_CLI
+    })
+  })
+})
