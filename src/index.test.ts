@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import fc from 'fast-check'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -14,12 +14,27 @@ import {
   getRunCommand,
   parseArguments,
   shouldUseInteractiveMode,
+  promptProjectName,
+  promptOverwrite,
+  promptPackageName,
+  promptFramework,
+  promptVariant,
+  promptImmediate,
   FRAMEWORKS,
   TEMPLATES,
   renameFiles,
   type CLIArguments,
   type Framework,
 } from './index'
+
+// Mock @clack/prompts module
+vi.mock('@clack/prompts', () => ({
+  text: vi.fn(),
+  select: vi.fn(),
+  confirm: vi.fn(),
+  cancel: vi.fn(),
+  isCancel: vi.fn(),
+}))
 
 describe('Property Tests - String Validation and Formatting', () => {
   it('Property 3: Directory name formatting idempotence', () => {
@@ -489,5 +504,317 @@ describe('Unit Tests - Framework Data Structures', () => {
         expect(isJavaScript || isTypeScript).toBe(true)
       }
     }
+  })
+})
+
+describe('Unit Tests - Interactive Prompts', () => {
+  // Import the mocked prompts - will be mocked by vi.mock at the top
+  let prompts: any
+  
+  beforeEach(async () => {
+    prompts = await import('@clack/prompts')
+    vi.clearAllMocks()
+  })
+  
+  // Mock process.exit to prevent tests from actually exiting
+  const mockExit = vi.spyOn(process, 'exit').mockImplementation((code?: number) => {
+    throw new Error(`process.exit called with code ${code}`)
+  })
+  
+  afterEach(() => {
+    mockExit.mockClear()
+    vi.clearAllMocks()
+  })
+  
+  describe('promptProjectName', () => {
+    it('returns user input when valid project name is provided', async () => {
+      // Requirements: 2.2
+      vi.mocked(prompts.text).mockResolvedValue('my-project')
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      const result = await promptProjectName('default-project')
+      
+      expect(result).toBe('my-project')
+      expect(prompts.text).toHaveBeenCalledWith({
+        message: 'Project name:',
+        placeholder: 'default-project',
+        defaultValue: 'default-project',
+        validate: expect.any(Function),
+      })
+    })
+    
+    it('validates empty project names', async () => {
+      // Requirements: 2.3
+      vi.mocked(prompts.text).mockResolvedValue('test')
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      await promptProjectName('default')
+      
+      const call = vi.mocked(prompts.text).mock.calls[0][0]
+      const validateFn = call.validate
+      
+      // Test validation function
+      expect(validateFn('')).toBe('Project name cannot be empty')
+      expect(validateFn('   ')).toBe('Project name cannot be empty')
+      expect(validateFn('valid-name')).toBeUndefined()
+    })
+    
+    it('exits when user cancels', async () => {
+      // Requirements: 8.3
+      vi.mocked(prompts.text).mockResolvedValue(Symbol.for('clack.cancel'))
+      vi.mocked(prompts.isCancel).mockReturnValue(true)
+      vi.mocked(prompts.cancel).mockImplementation(() => {})
+      
+      await expect(promptProjectName('default')).rejects.toThrow('process.exit called with code 0')
+      
+      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled')
+      expect(mockExit).toHaveBeenCalledWith(0)
+    })
+  })
+  
+  describe('promptOverwrite', () => {
+    it('returns user selection for overwrite options', async () => {
+      // Requirements: 2.4
+      vi.mocked(prompts.select).mockResolvedValue('yes')
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      const result = await promptOverwrite('/path/to/dir')
+      
+      expect(result).toBe('yes')
+      expect(prompts.select).toHaveBeenCalledWith({
+        message: 'Target directory "/path/to/dir" is not empty. Please choose how to proceed:',
+        options: [
+          { value: 'yes', label: 'Remove existing files and continue' },
+          { value: 'no', label: 'Cancel operation' },
+          { value: 'ignore', label: 'Ignore files and continue' },
+        ],
+      })
+    })
+    
+    it('handles all three overwrite options', async () => {
+      // Requirements: 2.4
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      // Test 'yes' option
+      vi.mocked(prompts.select).mockResolvedValueOnce('yes')
+      expect(await promptOverwrite('/dir')).toBe('yes')
+      
+      // Test 'no' option
+      vi.mocked(prompts.select).mockResolvedValueOnce('no')
+      expect(await promptOverwrite('/dir')).toBe('no')
+      
+      // Test 'ignore' option
+      vi.mocked(prompts.select).mockResolvedValueOnce('ignore')
+      expect(await promptOverwrite('/dir')).toBe('ignore')
+    })
+    
+    it('exits when user cancels', async () => {
+      // Requirements: 8.3
+      vi.mocked(prompts.select).mockResolvedValue(Symbol.for('clack.cancel'))
+      vi.mocked(prompts.isCancel).mockReturnValue(true)
+      vi.mocked(prompts.cancel).mockImplementation(() => {})
+      
+      await expect(promptOverwrite('/dir')).rejects.toThrow('process.exit called with code 0')
+      
+      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled')
+      expect(mockExit).toHaveBeenCalledWith(0)
+    })
+  })
+  
+  describe('promptPackageName', () => {
+    it('returns valid package name when provided', async () => {
+      // Requirements: 2.5
+      vi.mocked(prompts.text).mockResolvedValue('my-package')
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      const result = await promptPackageName('default-package')
+      
+      expect(result).toBe('my-package')
+      expect(prompts.text).toHaveBeenCalledWith({
+        message: 'Package name:',
+        placeholder: 'default-package',
+        defaultValue: 'default-package',
+        validate: expect.any(Function),
+      })
+    })
+    
+    it('validates package names according to npm conventions', async () => {
+      // Requirements: 2.5
+      vi.mocked(prompts.text).mockResolvedValue('test')
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      await promptPackageName('default')
+      
+      const call = vi.mocked(prompts.text).mock.calls[0][0]
+      const validateFn = call.validate
+      
+      // Test validation function
+      expect(validateFn('')).toBe('Package name cannot be empty')
+      expect(validateFn('   ')).toBe('Package name cannot be empty')
+      expect(validateFn('Invalid-Name')).toBe('Invalid package name (must follow npm naming conventions)')
+      expect(validateFn('valid-name')).toBeUndefined()
+      expect(validateFn('my-package')).toBeUndefined()
+      expect(validateFn('@scope/package')).toBeUndefined()
+    })
+    
+    it('exits when user cancels', async () => {
+      // Requirements: 8.3
+      vi.mocked(prompts.text).mockResolvedValue(Symbol.for('clack.cancel'))
+      vi.mocked(prompts.isCancel).mockReturnValue(true)
+      vi.mocked(prompts.cancel).mockImplementation(() => {})
+      
+      await expect(promptPackageName('default')).rejects.toThrow('process.exit called with code 0')
+      
+      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled')
+      expect(mockExit).toHaveBeenCalledWith(0)
+    })
+  })
+  
+  describe('promptFramework', () => {
+    it('returns selected framework', async () => {
+      // Requirements: 2.6
+      vi.mocked(prompts.select).mockResolvedValue(FRAMEWORKS[0])
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      const result = await promptFramework(FRAMEWORKS)
+      
+      expect(result).toBe(FRAMEWORKS[0])
+      expect(prompts.select).toHaveBeenCalledWith({
+        message: 'Select a framework:',
+        options: expect.any(Array),
+      })
+    })
+    
+    it('formats framework options with colors', async () => {
+      // Requirements: 2.6
+      vi.mocked(prompts.select).mockResolvedValue(FRAMEWORKS[0])
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      await promptFramework(FRAMEWORKS)
+      
+      const call = vi.mocked(prompts.select).mock.calls[0][0]
+      const options = call.options
+      
+      expect(options).toHaveLength(FRAMEWORKS.length)
+      
+      for (let i = 0; i < FRAMEWORKS.length; i++) {
+        expect(options[i].value).toBe(FRAMEWORKS[i])
+        expect(typeof options[i].label).toBe('string')
+      }
+    })
+    
+    it('exits when user cancels', async () => {
+      // Requirements: 8.3
+      vi.mocked(prompts.select).mockResolvedValue(Symbol.for('clack.cancel'))
+      vi.mocked(prompts.isCancel).mockReturnValue(true)
+      vi.mocked(prompts.cancel).mockImplementation(() => {})
+      
+      await expect(promptFramework(FRAMEWORKS)).rejects.toThrow('process.exit called with code 0')
+      
+      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled')
+      expect(mockExit).toHaveBeenCalledWith(0)
+    })
+  })
+  
+  describe('promptVariant', () => {
+    it('returns selected variant name', async () => {
+      // Requirements: 2.7
+      const variants = FRAMEWORKS[0].variants
+      vi.mocked(prompts.select).mockResolvedValue(variants[0].name)
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      const result = await promptVariant(variants)
+      
+      expect(result).toBe(variants[0].name)
+      expect(prompts.select).toHaveBeenCalledWith({
+        message: 'Select a variant:',
+        options: expect.any(Array),
+      })
+    })
+    
+    it('formats variant options with colors', async () => {
+      // Requirements: 2.7
+      const variants = FRAMEWORKS[0].variants
+      vi.mocked(prompts.select).mockResolvedValue(variants[0].name)
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      await promptVariant(variants)
+      
+      const call = vi.mocked(prompts.select).mock.calls[0][0]
+      const options = call.options
+      
+      expect(options).toHaveLength(variants.length)
+      
+      for (let i = 0; i < variants.length; i++) {
+        expect(options[i].value).toBe(variants[i].name)
+        expect(typeof options[i].label).toBe('string')
+      }
+    })
+    
+    it('exits when user cancels', async () => {
+      // Requirements: 8.3
+      vi.mocked(prompts.select).mockResolvedValue(Symbol.for('clack.cancel'))
+      vi.mocked(prompts.isCancel).mockReturnValue(true)
+      vi.mocked(prompts.cancel).mockImplementation(() => {})
+      
+      await expect(promptVariant(FRAMEWORKS[0].variants)).rejects.toThrow('process.exit called with code 0')
+      
+      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled')
+      expect(mockExit).toHaveBeenCalledWith(0)
+    })
+  })
+  
+  describe('promptImmediate', () => {
+    it('returns user confirmation for immediate installation', async () => {
+      // Requirements: 2.8
+      vi.mocked(prompts.confirm).mockResolvedValue(true)
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      const result = await promptImmediate('pnpm')
+      
+      expect(result).toBe(true)
+      expect(prompts.confirm).toHaveBeenCalledWith({
+        message: 'Install dependencies and start dev server with pnpm?',
+        initialValue: false,
+      })
+    })
+    
+    it('handles both true and false responses', async () => {
+      // Requirements: 2.8
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      // Test true response
+      vi.mocked(prompts.confirm).mockResolvedValueOnce(true)
+      expect(await promptImmediate('npm')).toBe(true)
+      
+      // Test false response
+      vi.mocked(prompts.confirm).mockResolvedValueOnce(false)
+      expect(await promptImmediate('yarn')).toBe(false)
+    })
+    
+    it('includes package manager name in message', async () => {
+      // Requirements: 2.8
+      vi.mocked(prompts.confirm).mockResolvedValue(false)
+      vi.mocked(prompts.isCancel).mockReturnValue(false)
+      
+      await promptImmediate('bun')
+      
+      expect(prompts.confirm).toHaveBeenCalledWith({
+        message: 'Install dependencies and start dev server with bun?',
+        initialValue: false,
+      })
+    })
+    
+    it('exits when user cancels', async () => {
+      // Requirements: 8.3
+      vi.mocked(prompts.confirm).mockResolvedValue(Symbol.for('clack.cancel'))
+      vi.mocked(prompts.isCancel).mockReturnValue(true)
+      vi.mocked(prompts.cancel).mockImplementation(() => {})
+      
+      await expect(promptImmediate('npm')).rejects.toThrow('process.exit called with code 0')
+      
+      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled')
+      expect(mockExit).toHaveBeenCalledWith(0)
+    })
   })
 })
