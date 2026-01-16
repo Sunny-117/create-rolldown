@@ -163,10 +163,19 @@ export function copyTemplate(
       });
     }
 
-    // Update index.html with the correct project name
+    // Update index.html with the correct project name (check both root and playground)
     const indexHtmlPath = path.join(root, 'index.html');
+    const playgroundIndexHtmlPath = path.join(root, 'playground', 'index.html');
+
     if (fs.existsSync(indexHtmlPath)) {
       editFile(indexHtmlPath, (content) => {
+        // Use a replacement function to avoid issues with special regex characters
+        return content.replace(/<title>.*?<\/title>/, () => `<title>${projectName}</title>`);
+      });
+    }
+
+    if (fs.existsSync(playgroundIndexHtmlPath)) {
+      editFile(playgroundIndexHtmlPath, (content) => {
         // Use a replacement function to avoid issues with special regex characters
         return content.replace(/<title>.*?<\/title>/, () => `<title>${projectName}</title>`);
       });

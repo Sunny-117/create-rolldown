@@ -110,12 +110,12 @@ test('return help usage how to use create-rolldown', () => {
   expect(stdout).toContain(message);
 });
 
-test('sets index.html title to project name', () => {
-  const { stdout } = run([projectName, '--template', 'react'], {
+test('sets index.html title to project name in playground', () => {
+  const { stdout } = run([projectName, '--template', 'react', '--no-interactive'], {
     cwd: __dirname,
   });
 
-  const indexHtmlPath = path.join(genPath, 'index.html');
+  const indexHtmlPath = path.join(genPath, 'playground', 'index.html');
   const indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf-8');
 
   expect(stdout).toContain(`Scaffolding project in ${genPath}`);
@@ -155,7 +155,7 @@ test('converts invalid package name to valid one', () => {
 });
 
 test('handles all supported templates', () => {
-  const templates = ['vanilla', 'react'];
+  const templates = ['vanilla', 'react', 'vue', 'solid', 'svelte'];
 
   templates.forEach((template) => {
     const testPath = path.join(__dirname, `test-${template}`);

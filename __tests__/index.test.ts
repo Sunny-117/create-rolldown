@@ -22,7 +22,6 @@ import {
   promptOverwrite,
   promptPackageName,
   promptFramework,
-  promptVariant,
   promptImmediate,
   install,
   start,
@@ -612,8 +611,8 @@ describe('Property Tests - CLI Argument Parsing', () => {
 describe('Unit Tests - Framework Data Structures', () => {
   it('verifies all required frameworks are defined', () => {
     // Requirements: 3.1
-    // Note: Currently only vanilla and react templates are implemented
-    const requiredFrameworks = ['vanilla', 'react'];
+    // Note: All templates are now TypeScript-only
+    const requiredFrameworks = ['vanilla', 'react', 'vue', 'solid', 'svelte'];
     const definedFrameworks = FRAMEWORKS.map((f) => f.name);
 
     for (const required of requiredFrameworks) {
@@ -623,31 +622,19 @@ describe('Unit Tests - Framework Data Structures', () => {
     expect(FRAMEWORKS.length).toBe(requiredFrameworks.length);
   });
 
-  it('verifies TypeScript variant symmetry', () => {
-    // Requirements: 3.2
-    // For any framework that supports TypeScript, there must be a corresponding JavaScript variant
+  it('verifies all templates are TypeScript-only', () => {
+    // Requirements: All templates use TypeScript by default
+    // No variants needed - each framework has one TypeScript template
     for (const framework of FRAMEWORKS) {
-      const variantNames = framework.variants.map((v) => v.name);
-      const hasTypeScript = variantNames.some((name) => name.endsWith('-ts'));
-      const hasJavaScript = variantNames.some((name) => !name.endsWith('-ts'));
-
-      if (hasTypeScript) {
-        // If there's a TypeScript variant, there must be a JavaScript variant
-        expect(hasJavaScript).toBe(true);
-
-        // Verify that for each TypeScript variant, there's a corresponding JavaScript variant
-        const tsVariants = variantNames.filter((name) => name.endsWith('-ts'));
-        for (const tsVariant of tsVariants) {
-          const jsVariant = tsVariant.replace('-ts', '');
-          expect(variantNames).toContain(jsVariant);
-        }
-      }
+      expect(framework.name).toBeTruthy();
+      expect(framework.display).toBeTruthy();
+      expect(framework.color).toBeTypeOf('function');
     }
   });
 
-  it('verifies all frameworks have at least one variant', () => {
+  it('verifies all frameworks have required properties', () => {
     for (const framework of FRAMEWORKS) {
-      expect(framework.variants.length).toBeGreaterThan(0);
+      expect(framework.name).toBeTruthy();
     }
   });
 
@@ -657,34 +644,18 @@ describe('Unit Tests - Framework Data Structures', () => {
       expect(framework.display).toBeDefined();
       expect(framework.color).toBeDefined();
       expect(typeof framework.color).toBe('function');
-      expect(framework.variants).toBeDefined();
-      expect(Array.isArray(framework.variants)).toBe(true);
+      // No variants property anymore - each framework is a template
     }
   });
 
-  it('verifies all variant properties are defined', () => {
-    for (const framework of FRAMEWORKS) {
-      for (const variant of framework.variants) {
-        expect(variant.name).toBeDefined();
-        expect(variant.display).toBeDefined();
-        expect(variant.color).toBeDefined();
-        expect(typeof variant.color).toBe('function');
-      }
-    }
-  });
+  it('verifies TEMPLATES contains all framework names', () => {
+    // All framework names should be in TEMPLATES
+    const allFrameworkNames = FRAMEWORKS.map((f) => f.name);
 
-  it('verifies TEMPLATES contains all variant names', () => {
-    const allVariantNames: string[] = [];
-    for (const framework of FRAMEWORKS) {
-      for (const variant of framework.variants) {
-        allVariantNames.push(variant.name);
-      }
-    }
+    expect(TEMPLATES.length).toBe(allFrameworkNames.length);
 
-    expect(TEMPLATES.length).toBe(allVariantNames.length);
-
-    for (const variantName of allVariantNames) {
-      expect(TEMPLATES).toContain(variantName);
+    for (const frameworkName of allFrameworkNames) {
+      expect(TEMPLATES).toContain(frameworkName);
     }
   });
 
@@ -699,23 +670,15 @@ describe('Unit Tests - Framework Data Structures', () => {
       const coloredText = framework.color('test');
       expect(typeof coloredText).toBe('string');
       expect(coloredText.length).toBeGreaterThan(0);
-
-      for (const variant of framework.variants) {
-        const variantColoredText = variant.color('test');
-        expect(typeof variantColoredText).toBe('string');
-        expect(variantColoredText.length).toBeGreaterThan(0);
-      }
     }
   });
 
-  it('verifies variant names match expected pattern', () => {
+  it('verifies framework names are valid template names', () => {
+    // Each framework name should be a valid template name
     for (const framework of FRAMEWORKS) {
-      for (const variant of framework.variants) {
-        // Variant name should either be the framework name or framework name + '-ts'
-        const isJavaScript = variant.name === framework.name;
-        const isTypeScript = variant.name === `${framework.name}-ts`;
-        expect(isJavaScript || isTypeScript).toBe(true);
-      }
+      expect(TEMPLATES).toContain(framework.name);
+      // Framework name should match pattern (lowercase, no special chars except hyphen)
+      expect(framework.name).toMatch(/^[a-z]+(-[a-z]+)*$/);
     }
   });
 });
@@ -933,55 +896,7 @@ describe('Unit Tests - Interactive Prompts', () => {
     });
   });
 
-  describe('promptVariant', () => {
-    it('returns selected variant name', async () => {
-      // Requirements: 2.7
-      const variants = FRAMEWORKS[0].variants;
-      vi.mocked(prompts.select).mockResolvedValue(variants[0].name);
-      vi.mocked(prompts.isCancel).mockReturnValue(false);
-
-      const result = await promptVariant(variants);
-
-      expect(result).toBe(variants[0].name);
-      expect(prompts.select).toHaveBeenCalledWith({
-        message: 'Select a variant:',
-        options: expect.any(Array),
-      });
-    });
-
-    it('formats variant options with colors', async () => {
-      // Requirements: 2.7
-      const variants = FRAMEWORKS[0].variants;
-      vi.mocked(prompts.select).mockResolvedValue(variants[0].name);
-      vi.mocked(prompts.isCancel).mockReturnValue(false);
-
-      await promptVariant(variants);
-
-      const call = vi.mocked(prompts.select).mock.calls[0][0];
-      const options = call.options;
-
-      expect(options).toHaveLength(variants.length);
-
-      for (let i = 0; i < variants.length; i++) {
-        expect(options[i].value).toBe(variants[i].name);
-        expect(typeof options[i].label).toBe('string');
-      }
-    });
-
-    it('exits when user cancels', async () => {
-      // Requirements: 8.3
-      vi.mocked(prompts.select).mockResolvedValue(Symbol.for('clack.cancel'));
-      vi.mocked(prompts.isCancel).mockReturnValue(true);
-      vi.mocked(prompts.cancel).mockImplementation(() => {});
-
-      await expect(promptVariant(FRAMEWORKS[0].variants)).rejects.toThrow(
-        'process.exit called with code 0'
-      );
-
-      expect(prompts.cancel).toHaveBeenCalledWith('Operation cancelled');
-      expect(mockExit).toHaveBeenCalledWith(0);
-    });
-  });
+  // promptVariant tests removed - no longer needed as we select framework directly
 
   describe('promptImmediate', () => {
     it('returns user confirmation for immediate installation', async () => {
@@ -1762,8 +1677,9 @@ describe('Integration Tests - Main Initialization Flow', () => {
     const framework = await promptFramework(FRAMEWORKS);
     expect(framework.name).toBe('react');
 
-    const variant = await promptVariant(framework.variants);
-    expect(variant).toBe('react');
+    // No need to prompt for variant - use framework name directly as template
+    const template = framework.name;
+    expect(template).toBe('react');
 
     const shouldInstall = await promptImmediate('npm');
     expect(shouldInstall).toBe(false);
