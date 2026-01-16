@@ -3,32 +3,32 @@
   "version": "0.1.0",
   "description": "Scaffolding tool for Rolldown projects",
   "keywords": [
-    "rolldown",
-    "scaffolding",
-    "template",
+    "bundler",
     "cli",
     "create-app",
-    "bundler"
+    "rolldown",
+    "scaffolding",
+    "template"
   ],
   "homepage": "https://github.com/sunny-117/create-rolldown",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/sunny-117/create-rolldown.git"
-  },
   "bugs": {
     "url": "https://github.com/sunny-117/create-rolldown/issues"
   },
   "license": "MIT",
   "author": "Sunny-117",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunny-117/create-rolldown.git"
+  },
   "bin": {
     "create-rolldown": "index.js"
   },
   "files": [
     "dist",
     "index.js",
-    "template-*",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "template-*"
   ],
   "type": "module",
   "scripts": {

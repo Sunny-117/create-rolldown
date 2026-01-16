@@ -34,6 +34,7 @@ bun create rolldown
 ```
 
 You'll be prompted to:
+
 1. Enter a project name
 2. Choose a framework (React or Vanilla)
 3. Optionally install dependencies and start the dev server immediately
@@ -96,10 +97,10 @@ npm create rolldown@latest my-app -- --template react --no-interactive
 
 ## Supported Templates
 
-| Template | Description |
-|----------|-------------|
+| Template  | Description                  |
+| --------- | ---------------------------- |
 | `vanilla` | Vanilla TypeScript (default) |
-| `react` | React with TypeScript |
+| `react`   | React with TypeScript        |
 
 > **Note**: All templates use TypeScript. More framework templates (Vue, Svelte, Solid, Qwik) are planned for future releases.
 
@@ -180,6 +181,7 @@ The project uses a comprehensive testing strategy:
 Current test coverage: **90+ tests** covering core functionality, edge cases, and correctness properties.
 
 Run tests:
+
 ```bash
 # Run all tests once
 pnpm test
