@@ -1,13 +1,23 @@
-# create-rolldown
+<h1 align='center'>
+<samp>create-rolldown <img src="https://img.shields.io/npm/v/create-rolldown?color=333&labelColor=555&style=flat-square" ></samp>
+</h1>
 
-[![npm version](https://img.shields.io/npm/v/create-rolldown.svg)](https://www.npmjs.com/package/create-rolldown)
-[![license](https://img.shields.io/npm/l/create-rolldown.svg)](https://github.com/rolldown/create-rolldown/blob/main/LICENSE)
+
+<p align='center'>
+  <samp>⚡️ Scaffolding tool for Rolldown library projects - a fast JavaScript bundler written in Rust, with TypeScript support and multiple framework templates</samp>
+<br>
+<br>
+</p>
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![bundle][bundle-src]][bundle-href]
+[![License][license-src]][license-href]
 [![test](https://img.shields.io/badge/tests-77%20passed-brightgreen.svg)](https://github.com/sunny-117/create-rolldown)
 [![coverage](https://img.shields.io/badge/coverage-60.87%25-yellow.svg)](https://github.com/sunny-117/create-rolldown)
 
-Scaffolding tool for [Rolldown](https://rolldown.rs) library projects - a fast JavaScript bundler written in Rust.
+## Introduction
 
-## Features
+**Core Features:**
 
 - 🚀 **Fast Setup** - Create a new Rolldown project in seconds
 - 🎨 **TypeScript First** - All templates use TypeScript by default
@@ -17,24 +27,26 @@ Scaffolding tool for [Rolldown](https://rolldown.rs) library projects - a fast J
 - 📦 **Smart Package Manager Detection** - Automatically detects and uses your preferred package manager (npm, pnpm, yarn, bun)
 - ⚡ **Immediate Start** - Optional flag to install dependencies and start playground immediately
 
-## Usage
-
-### Interactive Mode (Recommended)
-
-Simply run one of the following commands and follow the prompts:
+## Installation
 
 ```bash
-# npm
 npm create rolldown@latest
-
-# pnpm
+# or
 pnpm create rolldown
-
-# yarn
+# or
 yarn create rolldown
-
-# bun
+# or
 bun create rolldown
+```
+
+## Quick Start
+
+### Method 1: Interactive Mode (Recommended)
+
+Simply run the command and follow the prompts:
+
+```bash
+npm create rolldown@latest
 ```
 
 You'll be prompted to:
@@ -43,9 +55,7 @@ You'll be prompted to:
 2. Choose a framework (Vanilla, React, Vue, Solid, or Svelte)
 3. Optionally install dependencies and start the playground immediately
 
-> **Note**: All templates use TypeScript and are designed for library development (utility libraries, component libraries, tools, etc.).
-
-### Non-Interactive Mode
+### Method 2: Non-Interactive Mode
 
 For automated workflows or CI/CD pipelines:
 
@@ -60,6 +70,16 @@ npm create rolldown@latest my-lib -- --template vue --immediate --no-interactive
 npm create rolldown@latest my-lib -- --template solid --overwrite --no-interactive
 ```
 
+## Supported Templates
+
+| Template  | Description                      | Use Cases                          | Playground |
+| --------- | -------------------------------- | ---------------------------------- | ---------- |
+| `vanilla` | Vanilla TypeScript library       | Utility libraries, tools, helpers  | ❌         |
+| `react`   | React library with TypeScript    | React components, hooks, utilities | ✅ Vite    |
+| `vue`     | Vue 3 library with TypeScript    | Vue components, composables        | ✅ Vite    |
+| `solid`   | SolidJS library with TypeScript  | Solid components, primitives       | ✅ Vite    |
+| `svelte`  | Svelte 5 library with TypeScript | Svelte components, actions         | ✅ Vite    |
+
 ## Command Line Options
 
 ```
@@ -72,24 +92,7 @@ Options:
   --interactive                Force interactive mode (default in TTY)
   --no-interactive             Force non-interactive mode (default in non-TTY)
   -h, --help                   Display this help message
-
-Available templates:
-  vanilla                      Vanilla TypeScript library
-  react                        React component library
-  vue                          Vue component library
-  solid                        SolidJS component library
-  svelte                       Svelte component library
 ```
-
-## Supported Templates
-
-| Template  | Description                      | Use Cases                          | Playground |
-| --------- | -------------------------------- | ---------------------------------- | ---------- |
-| `vanilla` | Vanilla TypeScript library       | Utility libraries, tools, helpers  | ❌         |
-| `react`   | React library with TypeScript    | React components, hooks, utilities | ✅ Vite    |
-| `vue`     | Vue 3 library with TypeScript    | Vue components, composables        | ✅ Vite    |
-| `solid`   | SolidJS library with TypeScript  | Solid components, primitives       | ✅ Vite    |
-| `svelte`  | Svelte 5 library with TypeScript | Svelte components, actions         | ✅ Vite    |
 
 ## Development
 
@@ -168,10 +171,22 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT - see [LICENSE](./LICENSE) file for details
+💛 [MIT](./LICENSE) License © [Sunny-117](https://github.com/Sunny-117)
 
 ## Related Projects
 
 - [Rolldown](https://rolldown.rs) - Fast JavaScript bundler written in Rust
 - [tsdown](https://tsdown.dev) - TypeScript bundler built on Rolldown
 - [create-vite](https://github.com/vitejs/vite/tree/main/packages/create-vite) - Inspiration for this project
+
+
+<!-- Badges -->
+
+[npm-version-src]: https://img.shields.io/npm/v/create-rolldown?style=flat&colorA=080f12&colorB=1fa669
+[npm-version-href]: https://npmjs.com/package/create-rolldown
+[npm-downloads-src]: https://img.shields.io/npm/dm/create-rolldown?style=flat&colorA=080f12&colorB=1fa669
+[npm-downloads-href]: https://npmjs.com/package/create-rolldown
+[bundle-src]: https://img.shields.io/bundlephobia/minzip/create-rolldown?style=flat&colorA=080f12&colorB=1fa669&label=minzip
+[bundle-href]: https://bundlephobia.com/result?p=create-rolldown
+[license-src]: https://img.shields.io/github/license/Sunny-117/create-rolldown.svg?style=flat&colorA=080f12&colorB=1fa669
+[license-href]: https://github.com/Sunny-117/create-rolldown/blob/main/LICENSE
