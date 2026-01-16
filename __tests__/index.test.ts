@@ -10,8 +10,6 @@ import {
   isEmpty,
   emptyDir,
   copyDir,
-  write,
-  editFile,
   copyTemplate,
   pkgFromUserAgent,
   getInstallCommand,
@@ -29,7 +27,6 @@ import {
   TEMPLATES,
   renameFiles,
   type CLIArguments,
-  type Framework,
 } from '../src/utils';
 
 // Mock @clack/prompts module
@@ -985,12 +982,6 @@ describe('Unit Tests - Command Execution', () => {
       // Ensure we're not in test mode
       delete process.env._ROLLDOWN_TEST_CLI;
 
-      // Mock spawn.sync to avoid actual command execution
-      const mockSpawn = vi.fn().mockReturnValue({
-        status: 0,
-        error: null,
-      });
-
       // We can't easily test actual command execution without mocking
       // This test verifies the function exists and has the right signature
       expect(typeof run).toBe('function');
@@ -1575,9 +1566,6 @@ describe('Integration Tests - Main Initialization Flow', () => {
     );
     fs.writeFileSync(path.join(templateDir, '_gitignore'), 'node_modules\n');
     fs.writeFileSync(path.join(templateDir, 'README.md'), '# Template');
-
-    // Mock import.meta.url to point to our temp directory
-    const originalUrl = import.meta.url;
 
     // We can't easily test the full init function without mocking import.meta.url
     // Instead, we'll test the individual components that make up the flow

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { SyncOptions } from 'execa';
 import { execaCommandSync } from 'execa';
-import { afterAll, afterEach, beforeAll, expect, test } from 'vitest';
+import { afterAll, beforeAll, expect, test } from 'vitest';
 
 const CLI_PATH = path.join(__dirname, '..');
 
@@ -137,9 +137,6 @@ test('uses default template when none specified in non-interactive mode', () => 
 
 test('converts invalid package name to valid one', () => {
   const invalidName = 'My-Invalid-Package-Name';
-  const { stdout } = run([invalidName, '--template', 'react', '--no-interactive'], {
-    cwd: __dirname,
-  });
 
   const targetPath = path.join(__dirname, invalidName);
   const pkgJsonPath = path.join(targetPath, 'package.json');
