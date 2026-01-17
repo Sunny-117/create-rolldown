@@ -43,7 +43,7 @@
     "format:check": "oxfmt --check",
     "prepare": "simple-git-hooks",
     "prepublishOnly": "pnpm build && pnpm test",
-    "release": "pnpm test && changelogen --release --bump prerelease && npm publish && git push --follow-tags"
+    "release": "changelogen --release --bump prerelease && npm publish && git push --follow-tags"
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
