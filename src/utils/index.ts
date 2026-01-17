@@ -7,7 +7,7 @@
 export type { CLIArguments, Framework, FrameworkVariant, ColorFunc, PkgInfo } from './types';
 
 // Constants
-export { FRAMEWORKS, TEMPLATES, renameFiles } from './constants';
+export { FRAMEWORKS, TEMPLATES, renameFiles, defaultBanner, gradientBanner } from './constants';
 
 // File operations
 export { isEmpty, emptyDir, copy, copyDir, write, editFile, copyTemplate } from './file';

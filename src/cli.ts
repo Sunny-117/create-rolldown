@@ -30,6 +30,8 @@ import {
   promptImmediate,
   FRAMEWORKS,
   TEMPLATES,
+  gradientBanner,
+  defaultBanner,
 } from './utils';
 
 /**
@@ -48,6 +50,12 @@ function exitProcess(code: number): void {
  */
 async function init(): Promise<void> {
   try {
+    // Display banner
+    console.log();
+    const supportsColor = process.stdout.isTTY && process.env.TERM !== 'dumb';
+    console.log(supportsColor ? gradientBanner : defaultBanner);
+    console.log();
+
     const args = parseArguments();
 
     // Display help if requested
