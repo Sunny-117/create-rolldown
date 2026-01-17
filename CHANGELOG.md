@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.0.7
+
+[compare changes](https://github.com/sunny-117/create-rolldown/compare/v0.0.6...v0.0.7)
+
+### 🚀 Enhancements
+
+- Add banners for CLI startup ([19550bb](https://github.com/sunny-117/create-rolldown/commit/19550bb))
+
+### 📖 Documentation
+
+- Update readme ([640c9b8](https://github.com/sunny-117/create-rolldown/commit/640c9b8))
+- Update readme ([f0ea36b](https://github.com/sunny-117/create-rolldown/commit/f0ea36b))
+- Update readme ([55b8cea](https://github.com/sunny-117/create-rolldown/commit/55b8cea))
+- Move development setup instructions to a separate file ([f4fccfb](https://github.com/sunny-117/create-rolldown/commit/f4fccfb))
+- Update readme ([4c953ce](https://github.com/sunny-117/create-rolldown/commit/4c953ce))
+
+### 🏡 Chore
+
+- Update scripts ([2b2a68c](https://github.com/sunny-117/create-rolldown/commit/2b2a68c))
+- Remove unnecessary blank lines in DEVELOPMENT.md ([ab2da0c](https://github.com/sunny-117/create-rolldown/commit/ab2da0c))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.6
 
 [compare changes](https://github.com/sunny-117/create-rolldown/compare/v0.0.5...v0.0.6)
