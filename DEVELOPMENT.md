@@ -5,8 +5,6 @@
 - Node.js 20.19.0+ or 22.12.0+
 - pnpm (recommended)
 
-
-
 ### Setup
 
 ```bash
