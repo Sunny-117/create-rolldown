@@ -1,32 +1,76 @@
 {
-  "name": "mini-formily",
-  "private": true,
-  "version": "0.0.0",
+  "name": "create-rolldown",
+  "version": "0.0.7",
+  "description": "Scaffolding tool for Rolldown projects",
+  "keywords": [
+    "bundler",
+    "cli",
+    "create-app",
+    "rolldown",
+    "scaffolding",
+    "template"
+  ],
+  "homepage": "https://github.com/sunny-117/create-rolldown",
+  "bugs": {
+    "url": "https://github.com/sunny-117/create-rolldown/issues"
+  },
+  "license": "MIT",
+  "author": "Sunny-117",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sunny-117/create-rolldown.git"
+  },
+  "bin": {
+    "create-rolldown": "index.js"
+  },
+  "files": [
+    "dist",
+    "index.js",
+    "LICENSE",
+    "README.md",
+    "template-*/**"
+  ],
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build:all": "pnpm turbo run build",
-    "test": "vitest"
+    "dev": "tsdown --watch",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --run --coverage",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "prepare": "simple-git-hooks",
+    "prepublishOnly": "pnpm build && pnpm test",
+    "release": "changelogen --release --bump prerelease && npm publish && git push --follow-tags"
   },
   "dependencies": {
-    "@formily/antd": "^2.2.1",
-    "@formily/core": "^2.2.1",
-    "@formily/react": "^2.2.1",
-    "@formily/reactive": "^2.2.1",
-    "@formily/reactive-react": "^2.2.1",
-    "ajv": "^8.11.0",
-    "antd": "^4.22.8",
-    "less": "^4.1.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@clack/prompts": "^0.7.0",
+    "@vercel/detect-agent": "^1.0.0",
+    "cross-spawn": "^7.0.3",
+    "mri": "^1.2.0",
+    "picocolors": "^1.0.0"
   },
   "devDependencies": {
-    "turbo": "^1.3.1",
-    "@types/react": "^18.0.17",
-    "@types/react-dom": "^18.0.6",
-    "@vitejs/plugin-react": "^2.0.1",
-    "typescript": "^4.6.4",
-    "vite": "^3.0.7",
-    "vitest": "^0.28.3"
+    "@types/cross-spawn": "^6.0.6",
+    "@types/mri": "^1.1.5",
+    "@types/node": "^20.11.0",
+    "@vitest/coverage-v8": "^1.6.1",
+    "changelogen": "^0.6.2",
+    "execa": "^9.0.0",
+    "fast-check": "^3.15.0",
+    "oxfmt": "^0.24.0",
+    "oxlint": "^0.17.0",
+    "simple-git-hooks": "^2.12.1",
+    "tsdown": "^0.2.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm format && pnpm lint && git add -u"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

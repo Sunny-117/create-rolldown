@@ -1,0 +1,57 @@
+{
+  "name": "rolldown-vue-starter",
+  "version": "0.0.0",
+  "description": "A starter for creating a Vue library with Rolldown.",
+  "keywords": [
+    "bundler",
+    "component",
+    "library",
+    "rolldown",
+    "typescript",
+    "vue",
+    "vue3"
+  ],
+  "homepage": "https://github.com/author/library#readme",
+  "bugs": {
+    "url": "https://github.com/author/library/issues"
+  },
+  "license": "MIT",
+  "author": "Author Name <author.name@mail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/author/library.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rolldown -c rolldown.config.ts",
+    "dev": "rolldown -c rolldown.config.ts --watch",
+    "play": "vite",
+    "typecheck": "vue-tsc --noEmit",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "rolldown": "^1.0.0-beta.60",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vue": "^3.5.25",
+    "vue-tsc": "^3.1.8"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  }
+}
