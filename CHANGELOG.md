@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.0.8
+
+### 🚀 Enhancements
+
+- Readm ([64f1512](https://github.com/sunny-117/create-rolldown/commit/64f1512))
+- Setup ([5b2ec9d](https://github.com/sunny-117/create-rolldown/commit/5b2ec9d))
+- Reactive ([1c71c4f](https://github.com/sunny-117/create-rolldown/commit/1c71c4f))
+- Reactive ([acd064f](https://github.com/sunny-117/create-rolldown/commit/acd064f))
+- Packages ([00f4941](https://github.com/sunny-117/create-rolldown/commit/00f4941))
+- Readme ([873c20a](https://github.com/sunny-117/create-rolldown/commit/873c20a))
+- Vitest ([61e4b00](https://github.com/sunny-117/create-rolldown/commit/61e4b00))
+- Observable ([24995a6](https://github.com/sunny-117/create-rolldown/commit/24995a6))
+- Observable handler ([747c58f](https://github.com/sunny-117/create-rolldown/commit/747c58f))
+- Observable hello world ([147c339](https://github.com/sunny-117/create-rolldown/commit/147c339))
+- Antd core path ([b372e95](https://github.com/sunny-117/create-rolldown/commit/b372e95))
+- Build by turbo rollup and tsup ([2d8a2dd](https://github.com/sunny-117/create-rolldown/commit/2d8a2dd))
+- Update build scripts to use TypeScript config and add new config files for various templates ([cb83e62](https://github.com/sunny-117/create-rolldown/commit/cb83e62))
+
+### 🏡 Chore
+
+- Update deps ([37dfb9e](https://github.com/sunny-117/create-rolldown/commit/37dfb9e))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+- Fuzhiqiang <fuzhiqiang@baidu.com>
+- 付志强 <zhiqiangfu6@gmail.com>
+
 ## v0.0.7
 
 [compare changes](https://github.com/sunny-117/create-rolldown/compare/v0.0.6...v0.0.7)
