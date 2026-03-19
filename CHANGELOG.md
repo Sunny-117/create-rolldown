@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.0.9
+
+[compare changes](https://github.com/sunny-117/create-rolldown/compare/v0.0.8...v0.0.9)
+
+### 🏡 Chore
+
+- Fix tests ([4519cbe](https://github.com/sunny-117/create-rolldown/commit/4519cbe))
+
+### ❤️ Contributors
+
+- Sunny-117 <zhiqiangfu6@gmail.com>
+
 ## v0.0.8
 
 ### 🚀 Enhancements
