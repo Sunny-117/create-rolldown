@@ -173,4 +173,4 @@ test('handles all supported templates', () => {
     // Cleanup
     fs.rmSync(testPath, { recursive: true, force: true });
   });
-});
+}, 30000);

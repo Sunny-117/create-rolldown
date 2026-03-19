@@ -1633,9 +1633,7 @@ describe('Integration Tests - Main Initialization Flow', () => {
     vi.mocked(prompts.text).mockResolvedValueOnce('my-react-app'); // project name
 
     const reactFramework = FRAMEWORKS.find((f) => f.name === 'react')!;
-    vi.mocked(prompts.select)
-      .mockResolvedValueOnce(reactFramework) // framework selection
-      .mockResolvedValueOnce('react'); // variant selection
+    vi.mocked(prompts.select).mockResolvedValueOnce(reactFramework); // framework selection
 
     vi.mocked(prompts.confirm).mockResolvedValueOnce(false); // immediate install
 
